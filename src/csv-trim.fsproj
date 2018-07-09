@@ -52,7 +52,8 @@
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="CsvTrim/CpTrim.fs" />
+    <Compile Include="CsvTrim\Common.fs" />
+    <Compile Include="CsvTrim\Trim.fs" />
     <None Include="Test01.fsx" />
     <Content Include="packages.config" />
   </ItemGroup>

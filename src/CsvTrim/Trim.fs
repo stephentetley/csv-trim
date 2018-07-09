@@ -1,24 +1,21 @@
-﻿module CsvTrim.CpTrim
+﻿// Copyright (c) Stephen Tetley 2018
+// License: BSD 3 Clause
+
+module CsvTrim.Trim
 
 open FSharp.Data
+
+open CsvTrim.Common
 
 type CsvTrimOptions = 
     { InputSeparator: string
       InputHasHeaders: bool
       OutputSeparator: string }
 
-let quoteField (input:string) : string = 
-    match input with
-    | null -> "\"\""
-    | _ -> sprintf "\"%s\"" (input.Replace("\"", "\"\""))
-
-let private optQuote(s:string) : string = 
-    if s.Contains "," then quoteField s else s
-    
 
 /// This one writes directly to a StreamWriter.
 /// Note - input text inside double quotes is not trimmed.
-let trimCsvFile2 (options:CsvTrimOptions) (inputFile:string) (outputFile:string) : unit =
+let trimCsvFile (options:CsvTrimOptions) (inputFile:string) (outputFile:string) : unit =
     let rowToTrimmedString (row:string []) : string = 
         let sep = options.OutputSeparator
         String.concat sep <| Array.map (fun (s:string) -> optQuote <| s.Trim()) row
