@@ -4,6 +4,7 @@
 open FSharp.Data
 
 #load @"CsvTrim\Common.fs"
+#load @"CsvTrim\CsvOutput.fs"
 #load @"CsvTrim\Trim.fs"
 open CsvTrim.Trim
 
