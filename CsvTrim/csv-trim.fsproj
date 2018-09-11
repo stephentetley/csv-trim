@@ -55,7 +55,6 @@
     <Compile Include="CsvTrim\Common.fs" />
     <Compile Include="CsvTrim\CsvOutput.fs" />
     <Compile Include="CsvTrim\Trim.fs" />
-    <None Include="Test01.fsx" />
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

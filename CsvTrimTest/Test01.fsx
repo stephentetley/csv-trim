@@ -5,9 +5,9 @@
 #r @"FSharp.Data.dll"
 open FSharp.Data
 
-#load @"CsvTrim\Common.fs"
-#load @"CsvTrim\CsvOutput.fs"
-#load @"CsvTrim\Trim.fs"
+#load "..\CsvTrim\CsvTrim\Common.fs"
+#load "..\CsvTrim\CsvTrim\CsvOutput.fs"
+#load "..\CsvTrim\CsvTrim\Trim.fs"
 open CsvTrim.Trim
 
 
@@ -54,3 +54,12 @@ let test04 () =
     let files = getFilesMatching sourceDir "*.tab.*"
 
     List.iter trim1 files
+
+let temp () = 
+    let input  = @"G:\work\Projects\new_lmps\RTS-export-for-Parent_OU.tab.txt"
+    let output = @"G:\work\Projects\new_lmps\RTS-export-for-Parent_OU.trim.csv"
+    let options = 
+        { InputSeparator = "\t"
+          InputHasHeaders = true
+          OutputSeparator = "," }
+    trimCsvFile options input output
