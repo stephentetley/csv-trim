@@ -5,15 +5,15 @@
 #r @"FSharp.Data.dll"
 open FSharp.Data
 
-#load "..\CsvTrim\CsvTrim\Common.fs"
-#load "..\CsvTrim\CsvTrim\CsvOutput.fs"
-#load "..\CsvTrim\CsvTrim\Trim.fs"
+#load "..\src\CsvTrim\Common.fs"
+#load "..\src\CsvTrim\CsvOutput.fs"
+#load "..\src\CsvTrim\Trim.fs"
 open CsvTrim.Trim
 
 
 let test01 () = 
-    let input  = @"G:\work\Projects\rtu\AR-asset-expired-2011\RTS-outstations.2018-07-06.tab.csv"
-    let output = @"G:\work\Projects\rtu\AR-asset-expired-2011\RTS-outstations.2018-07-06.trim.csv"
+    let input  = @"G:\work\Projects\rtu\AR-asset-expired-2011\BRADFORD_ESHOLT_STW_points.tab.csv"
+    let output = @"G:\work\Projects\rtu\AR-asset-expired-2011\BRADFORD_ESHOLT_STW_points.tab.csv"
     let options = 
         { InputSeparator = "\t"
           InputHasHeaders = true
@@ -38,28 +38,19 @@ let getFilesMatching (sourceDirectory:string) (pattern:string) : string list =
 
 
 let test04 () = 
-    let sourceDir = @"G:\work\Projects\uquart\rts-data"
+    let sourceDir = @"G:\work\AI2-exports\rts"
     let options = 
         { InputSeparator = "\t"
           InputHasHeaders = true
           OutputSeparator = "," }
 
     let trim1 (inputPath:string) : unit = 
-        let outputPath = inputPath.Replace(".tab.txt", ".csv")
+        let outputPath = inputPath.Replace(".tab.csv", ".trim.csv")
         if outputPath <> inputPath then
             printfn  "Triming: '%s'" inputPath
             trimCsvFile options inputPath outputPath
         else ()
 
-    let files = getFilesMatching sourceDir "*.tab.*"
+    let files = getFilesMatching sourceDir "*.tab.csv"
 
     List.iter trim1 files
-
-let temp () = 
-    let input  = @"G:\work\Projects\new_lmps\RTS-export-for-Parent_OU.tab.txt"
-    let output = @"G:\work\Projects\new_lmps\RTS-export-for-Parent_OU.trim.csv"
-    let options = 
-        { InputSeparator = "\t"
-          InputHasHeaders = true
-          OutputSeparator = "," }
-    trimCsvFile options input output

@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27703.2035
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "csv-trim", "CsvTrim\csv-trim.fsproj", "{0DCB58FD-0A48-437F-8FAD-693A20D8D622}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "csv-trim", "src\csv-trim.fsproj", "{0DCB58FD-0A48-437F-8FAD-693A20D8D622}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "csv-trim-test", "CsvTrimTest\csv-trim-test.fsproj", "{E7AD789A-2569-44C2-8282-EB91AB8D02E1}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "csv-trim-test", "test\csv-trim-test.fsproj", "{E7AD789A-2569-44C2-8282-EB91AB8D02E1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
