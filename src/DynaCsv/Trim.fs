@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Stephen Tetley 2018
 // License: BSD 3 Clause
 
-module CsvTrim.Trim
+module DynaCsv.Trim
 
 open FSharp.Data
 
-open CsvTrim.Common
+open DynaCsv.Common
 
 type CsvTrimOptions = 
     { InputSeparator: string

@@ -2,7 +2,7 @@
 // License: BSD 3 Clause
 
 
-module CsvTrim.Common
+module DynaCsv.Common
 
 
 let quoteField (input:string) : string = 

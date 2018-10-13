@@ -7,12 +7,12 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>e7ad789a-2569-44c2-8282-eb91ab8d02e1</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>csv_trim_test</RootNamespace>
-    <AssemblyName>csv_trim_test</AssemblyName>
+    <RootNamespace>dyna_csv_test</RootNamespace>
+    <AssemblyName>dyna_csv_test</AssemblyName>
     <UseStandardResourceNames>true</UseStandardResourceNames>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Name>csv-trim-test</Name>
+    <Name>dyna-csv-test</Name>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

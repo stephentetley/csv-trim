@@ -7,13 +7,13 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>0dcb58fd-0a48-437f-8fad-693a20d8d622</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>csv_trim</RootNamespace>
-    <AssemblyName>csv_trim</AssemblyName>
+    <RootNamespace>dyna_csv</RootNamespace>
+    <AssemblyName>dyna_csv</AssemblyName>
     <UseStandardResourceNames>true</UseStandardResourceNames>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <TargetFSharpCoreVersion>4.4.3.0</TargetFSharpCoreVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Name>csv-trim</Name>
+    <Name>dyna-csv</Name>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -52,9 +52,9 @@
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="CsvTrim\Common.fs" />
-    <Compile Include="CsvTrim\CsvOutput.fs" />
-    <Compile Include="CsvTrim\Trim.fs" />
+    <Compile Include="DynaCsv\Common.fs" />
+    <Compile Include="DynaCsv\CsvOutput.fs" />
+    <Compile Include="DynaCsv\Trim.fs" />
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

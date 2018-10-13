@@ -5,15 +5,15 @@
 #r @"FSharp.Data.dll"
 open FSharp.Data
 
-#load "..\src\CsvTrim\Common.fs"
-#load "..\src\CsvTrim\CsvOutput.fs"
-#load "..\src\CsvTrim\Trim.fs"
-open CsvTrim.Trim
+#load "..\src\DynaCsv\Common.fs"
+#load "..\src\DynaCsv\CsvOutput.fs"
+#load "..\src\DynaCsv\Trim.fs"
+open DynaCsv.Trim
 
 
 let test01 () = 
     let input  = @"G:\work\Projects\rtu\AR-asset-expired-2011\BRADFORD_ESHOLT_STW_points.tab.csv"
-    let output = @"G:\work\Projects\rtu\AR-asset-expired-2011\BRADFORD_ESHOLT_STW_points.tab.csv"
+    let output = @"G:\work\Projects\rtu\AR-asset-expired-2011\BRADFORD_ESHOLT_STW_points.trim.csv"
     let options = 
         { InputSeparator = "\t"
           InputHasHeaders = true
@@ -38,7 +38,7 @@ let getFilesMatching (sourceDirectory:string) (pattern:string) : string list =
 
 
 let test04 () = 
-    let sourceDir = @"G:\work\AI2-exports\rts"
+    let sourceDir = @"G:\work\ADB-exports\rts"
     let options = 
         { InputSeparator = "\t"
           InputHasHeaders = true
