@@ -1,3 +1,3 @@
-# csv-trim
+# dyna-csv
 
-Tiny project to trim whitespace in csv files.
+A small project to work dynamically with CSV files.
