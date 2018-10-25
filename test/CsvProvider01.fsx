@@ -22,7 +22,7 @@ type CsvProTable =
 
 type CsvProRow = CsvProTable.Row
 
-let csvProTableDestruct : ICsvProviderDestruct<CsvProTable>  =
+let csvProTableHelper : ICsvProviderDestruct<CsvProTable>  =
     let conv (row:CsvProRow) : Row = 
         new Row([csvInt row.A; csvInt row.B; csvInt row.C ])
     { new ICsvProviderDestruct<CsvProTable>
@@ -43,7 +43,7 @@ let test03 () =
     try 
         let csv1:obj = (new CsvProTable()) :> obj 
         let csv2 = csv1 :?> CsvFile
-        let mycsv = new Csv(csvFile = csv2)
+        let mycsv = new CsvOutput(csvFile = csv2)
         mycsv.SaveToString()
 
     with
@@ -52,7 +52,7 @@ let test03 () =
 let test04 () = 
     try 
         let csv1 = new CsvProTable()
-        let mycsv = fromCsvTable csvProTableDestruct csv1
+        let mycsv = CsvOutput.FromCsvTable(csvProTableHelper, csv1)
         mycsv.SaveToString()
 
     with

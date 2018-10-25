@@ -36,8 +36,8 @@ let trimCsvFile (options:CsvTrimOptions) (inputFile:string) (outputFile:string) 
 
     let csv1 = 
         match headers with
-        | None -> new Csv(rows = rows)
-        | Some headers -> new Csv(headers = headers, rows = rows)
+        | None -> new CsvOutput(rows = rows)
+        | Some headers -> new CsvOutput(headers = headers, rows = rows)
     csv1.Separator <- options.OutputSeparator
     csv1.QuoteChar <- options.OutputQuote  
 

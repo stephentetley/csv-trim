@@ -96,19 +96,23 @@ type Row =
 
 
 /// FSharp.Data API:
-/// table.Save(writer = sw, separator = ',', quote = '"' )
-/// table.SaveToString() 
-
+/// > table.Save(writer = sw, separator = ',', quote = '"' )
+/// > table.SaveToString() 
 /// So favor an object oriented API.
 
-let defaultQuote : Char = '"'
-let defaultSeparator : Char = ','
+let private defaultQuote : Char = '"'
+let private defaultSeparator : Char = ','
 
 
 
+/// F# design guidelines say favour object-interfaces rather than records of functions.
+/// We can't extend CsvProvider tables with extra methods (sure?) so we have to supply
+/// a dictionary manually.
+type ICsvProviderDestruct<'table> = 
+    abstract member GetHeaders : 'table -> option<string []>
+    abstract member GetRows: 'table -> seq<Row>
 
-
-type Csv = 
+type CsvOutput = 
     val private headers : option<string list>
     val mutable private separator : char
     val mutable private quoteChar : char
@@ -188,23 +192,17 @@ type Csv =
         Seq.iter (fun (row:Row) -> row.BufferOutput(sb,x.quoteChar,x.separator)) x.rows
         sb.ToString()
 
+    /// Note - ideally this would be a constrctor on Csv, but it causes a type problem
+    /// constraining 'table to obj, so it's a static method.
+    static member FromCsvTable (helper:ICsvProviderDestruct<'table>, csvTable:'table) : CsvOutput = 
+        let rows = helper.GetRows csvTable
+        let headers = helper.GetHeaders csvTable
+        match headers with
+        | None -> new CsvOutput(rows =  rows)
+        | Some arr -> new CsvOutput(rows = rows, headers = arr)
 
 
-/// F# design guidelines say favour object-interfaces rather than records of functions.
-/// We can't extend CsvProvider tables with extra methods (sure?) so we have to supply
-/// a dictionary manually.
-type ICsvProviderDestruct<'table> = 
-    abstract member GetHeaders : 'table -> option<string []>
-    abstract member GetRows: 'table -> seq<Row>
 
-/// Note - ideally this would be a constrctor on Csv, but it causes a type problem
-/// constraining 'table to obj.
-let fromCsvTable (helper:ICsvProviderDestruct<'table>) (csvTable:'table) : Csv = 
-    let rows = helper.GetRows csvTable
-    let headers = helper.GetHeaders csvTable
-    match headers with
-    | None -> new Csv(rows =  rows)
-    | Some arr -> new Csv(rows = rows, headers = arr)
 
 
 /// Prints 'true' or 'false' (unquoted).
