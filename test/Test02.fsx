@@ -18,8 +18,8 @@ let test01 () =
     printfn "%A" << Seq.take 3 <| csv.Rows
 
 let test02 () = 
-    let rows = List.toSeq [ new Row(cells = [csvBool true; csvString "Hello, World!"]) ]
-    let csv = new Csv(headers = ["One";"Two"], rows = rows )
+    let rows = List.toSeq [ new Row(cells = [csvBool true; csvString "Hello, World!"; csvString "Hello World!"; csvQuoted "value"]) ]
+    let csv = new Csv(headers = ["One";"Two";"Three";"Four"], rows = rows )
     csv.Separator <- '\t'
     printfn "%A" <| csv.Separator
     csv.Separator <- ','

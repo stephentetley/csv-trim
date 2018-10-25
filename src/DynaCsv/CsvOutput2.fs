@@ -87,10 +87,7 @@ type Row =
         Array.iteri helper x.cells; sb.Append("\n") |> ignore
 
 
-/// Prints 'true' or 'false' (unquoted).
-let csvBool (value:bool) : Cell = Cell <| value.ToString()
 
-let csvString (value:string) : Cell = Cell <| value
 
 
 /// FSharp.Data API:
@@ -131,7 +128,7 @@ type Csv =
     member x.Save (sw:StreamWriter) : unit = 
         match x.headers with
         | Some xs -> 
-            let row = new Row(List.map csvString xs)
+            let row = new Row(List.map Cell xs)
             row.StreamOutput(sw,x.quoteChar, x.separator)
         | None -> ()
         Seq.iter (fun (row:Row) -> row.StreamOutput(sw,x.quoteChar,x.separator)) x.rows
@@ -140,7 +137,7 @@ type Csv =
         let sb = new StringBuilder()
         match x.headers with
         | Some xs -> 
-            let row = new Row(List.map csvString xs)
+            let row = new Row(List.map Cell xs)
             row.BufferOutput(sb, x.quoteChar, x.separator)
         | None -> ()
         Seq.iter (fun (row:Row) -> row.BufferOutput(sb,x.quoteChar,x.separator)) x.rows
@@ -148,6 +145,36 @@ type Csv =
 
 
 
+/// Prints 'true' or 'false' (unquoted).
+let csvBool (value:bool) : Cell = Cell <| value.ToString()
+
+let csvString (value:string) : Cell = Cell <| value
+
+let csvQuoted (value:string) : Cell = Quoted <| value
 
 
+let csvDateTime (value:System.DateTime) (format:string) : Cell = 
+    Cell <| value.ToString(format)
+
+let csvLongDate (value:System.DateTime) (format:string) : Cell = 
+    Cell <| value.ToLongDateString()
+
+let csvShortDate (value:System.DateTime) (format:string) : Cell = 
+    Cell <| value.ToShortDateString()
+
+let csvLongTime (value:System.DateTime) (format:string) : Cell = 
+    Cell <| value.ToLongTimeString()
+
+let csvShortTime (value:System.DateTime) (format:string) : Cell = 
+    Cell <| value.ToShortTimeString()
+
+let csvDecimal (value:decimal) : Cell = Cell <| value.ToString()
+let csvFloat (value:float) : Cell = Cell <| value.ToString()
+let csvGuid (value:System.Guid) : Cell = Cell <| value.ToString() 
+let csvInteger (value:int) : Cell = Cell <| value.ToString()
+let csvInteger64 (value:int64) : Cell = Cell <| value.ToString()
+
+
+let csvInt (value:int) : Cell = Cell <| value.ToString()
+let csvInt64 (value:int64) : Cell = Cell <| value.ToString()
 
