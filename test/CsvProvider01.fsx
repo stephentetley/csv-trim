@@ -8,6 +8,12 @@ open System.IO
 #r @"FSharp.Data.dll"
 open FSharp.Data
 
+#load "..\src\DynaCsv\CsvOutput.fs"
+open DynaCsv.CsvOutput
+
+
+
+
 
 type CsvProTable = 
     CsvProvider< Sample = "A,B,C\n1,2,3\n1,3,2\n",
@@ -16,6 +22,45 @@ type CsvProTable =
 
 type CsvProRow = CsvProTable.Row
 
+let csvProTableDestruct : ICsvProviderDestruct<CsvProTable>  =
+    let conv (row:CsvProRow) : Row = 
+        new Row([csvInt row.A; csvInt row.B; csvInt row.C ])
+    { new ICsvProviderDestruct<CsvProTable>
+      with member this.GetHeaders table = table.Headers
+           member this.GetRows table = table.Rows |> Seq.map conv }
+
 let test01 () = 
     (new CsvProTable()).SaveToString()
+
+let test02 () = 
+    try 
+        char <| (new CsvProTable()).Separators
+    with
+    | ex -> failwithf "FAILED: %s" ex.Message
+
+/// This fails - can't seem to get a CsvFile from a typed CsvProvider "Table".
+let test03 () = 
+    try 
+        let csv1:obj = (new CsvProTable()) :> obj 
+        let csv2 = csv1 :?> CsvFile
+        let mycsv = new Csv(csvFile = csv2)
+        mycsv.SaveToString()
+
+    with
+    | ex -> failwithf "FAILED: %s" ex.Message
+
+let test04 () = 
+    try 
+        let csv1 = new CsvProTable()
+        let mycsv = fromCsvTable csvProTableDestruct csv1
+        mycsv.SaveToString()
+
+    with
+    | ex -> failwithf "FAILED: %s" ex.Message
+
+
+
+
+
+
 

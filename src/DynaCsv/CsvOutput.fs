@@ -7,6 +7,7 @@ open System
 open System.IO
 open System.Text
 
+open FSharp.Data
 
 /// The quoting behavior of Excel appears to be to be dynamic.
 /// Strings are quoted if the contain the quote character or the separator.
@@ -67,6 +68,9 @@ type Row =
     new (cells: Cell list) = { cells = List.toArray cells }
     new (cells: Cell []) = { cells = cells }
 
+    new (row:CsvRow) = 
+        { cells = Array.map Cell row.Columns }
+
     member x.Cells
         with get() = x.cells
 
@@ -100,6 +104,10 @@ type Row =
 let defaultQuote : Char = '"'
 let defaultSeparator : Char = ','
 
+
+
+
+
 type Csv = 
     val private headers : option<string list>
     val mutable private separator : char
@@ -112,11 +120,43 @@ type Csv =
         ; quoteChar = defaultQuote
         ; rows = rows }
     
+    new (headers: string list, quote:char, separator:char, rows : seq<Row>) = 
+        { headers = Some <| headers 
+        ; separator = separator
+        ; quoteChar = quote
+        ; rows = rows }
+
+
+    new (headers: string [], rows : seq<Row>) = 
+        { headers = Some <| Array.toList headers 
+        ; separator = defaultSeparator
+        ; quoteChar = defaultQuote
+        ; rows = rows }
+
+    new (headers: string [], quote:char, separator:char, rows : seq<Row>) = 
+        { headers = Some <| Array.toList headers 
+        ; separator = separator
+        ; quoteChar = quote
+        ; rows = rows }
+
     new (rows : seq<Row>) = 
         { headers = None 
         ; separator = defaultSeparator
         ; quoteChar = defaultQuote
         ; rows = rows }
+
+    /// Will fail if the separator is not a single char.
+    new (csvFile:CsvFile) = 
+        let sep : char = char csvFile.Separators
+        let quote = csvFile.Quote
+        let rows : seq<Row> = Seq.map (fun (r:CsvRow) -> new Row(r)) csvFile.Rows 
+        { headers = Option.map Array.toList csvFile.Headers 
+        ; separator = sep
+        ; quoteChar = quote
+        ; rows = rows }
+    
+
+
 
     member x.Separator
         with get() = x.separator
@@ -133,7 +173,11 @@ type Csv =
             row.StreamOutput(sw,x.quoteChar, x.separator)
         | None -> ()
         Seq.iter (fun (row:Row) -> row.StreamOutput(sw,x.quoteChar,x.separator)) x.rows
-            
+
+    member x.Save (path:string) : unit = 
+        use sw = new System.IO.StreamWriter(path)
+        x.Save(sw)
+        
     member x.SaveToString () : string = 
         let sb = new StringBuilder()
         match x.headers with
@@ -144,6 +188,23 @@ type Csv =
         Seq.iter (fun (row:Row) -> row.BufferOutput(sb,x.quoteChar,x.separator)) x.rows
         sb.ToString()
 
+
+
+/// F# design guidelines say favour object-interfaces rather than records of functions.
+/// We can't extend CsvProvider tables with extra methods (sure?) so we have to supply
+/// a dictionary manually.
+type ICsvProviderDestruct<'table> = 
+    abstract member GetHeaders : 'table -> option<string []>
+    abstract member GetRows: 'table -> seq<Row>
+
+/// Note - ideally this would be a constrctor on Csv, but it causes a type problem
+/// constraining 'table to obj.
+let fromCsvTable (helper:ICsvProviderDestruct<'table>) (csvTable:'table) : Csv = 
+    let rows = helper.GetRows csvTable
+    let headers = helper.GetHeaders csvTable
+    match headers with
+    | None -> new Csv(rows =  rows)
+    | Some arr -> new Csv(rows = rows, headers = arr)
 
 
 /// Prints 'true' or 'false' (unquoted).
