@@ -5,6 +5,7 @@ module DynaCsv.CsvOutput2
 
 open System
 open System.IO
+open System.Text
 
 
 /// The quoting behavior of Excel appears to be to be dynamic.
@@ -45,7 +46,7 @@ type Cell =
         | Cell(s) -> s
         | Quoted(s) -> sprintf "'%s'" s
 
-    member internal x.Output (quoteChar:char) (separator:char) : string = 
+    member internal x.Output (quoteChar:char, separator:char) : string = 
         match x with
         | Cell s -> quoteIfNecessary quoteChar separator s
         | Quoted s -> quotedValue quoteChar s
@@ -61,22 +62,29 @@ let defaultOutputOptions : OutputOptions =
 
 [<Struct>]
 type Row = 
-    val private cells : Cell list
+    val private cells : Cell []
 
-    new (cells: Cell list) = { cells = cells }
+    new (cells: Cell list) = { cells = List.toArray cells }
 
     member x.Cells
         with get() = x.cells
 
-    member internal x.StreamOutput (sw:StreamWriter) (quoteChar:char) (separator:char) : unit = 
-        let rec work (cells:Cell list) = 
-            match cells with
-            | [] -> sw.Write("\n")
-            | [x] -> 
-                sw.Write (x.Output quoteChar separator); sw.Write("\n")
-            | x :: xs -> 
-                sw.Write (x.Output quoteChar separator); sw.Write(separator); work xs
-        work x.Cells
+    member internal x.StreamOutput (sw:StreamWriter, quoteChar:char, separator:char) : unit = 
+        let helper (ix:int) (cell:Cell) : unit = 
+            if ix > 0 then 
+                sw.Write(separator); sw.Write (cell.Output(quoteChar,separator))
+            else
+                sw.Write (cell.Output(quoteChar,separator))
+        Array.iteri helper x.cells; sw.Write("\n")
+
+    member internal x.BufferOutput (sb:StringBuilder, quoteChar:char, separator:char) : unit =
+        let helper (ix:int) (x:Cell) : unit = 
+            if ix > 0 then 
+                sb.Append(separator) |> ignore
+                sb.Append(x.Output(quoteChar,separator)) |> ignore
+            else
+                sb.Append(x.Output(quoteChar,separator)) |> ignore
+        Array.iteri helper x.cells; sb.Append("\n") |> ignore
 
 
 /// Prints 'true' or 'false' (unquoted).
@@ -106,6 +114,12 @@ type Csv =
         ; quoteChar = defaultQuote
         ; rows = rows }
     
+    new (rows : seq<Row>) = 
+        { headers = None 
+        ; separator = defaultSeparator
+        ; quoteChar = defaultQuote
+        ; rows = rows }
+
     member x.Separator
         with get() = x.separator
         and  set(v:char) = x.separator <- v
@@ -118,12 +132,21 @@ type Csv =
         match x.headers with
         | Some xs -> 
             let row = new Row(List.map csvString xs)
-            row.StreamOutput sw x.quoteChar x.separator  
+            row.StreamOutput(sw,x.quoteChar, x.separator)
         | None -> ()
+        Seq.iter (fun (row:Row) -> row.StreamOutput(sw,x.quoteChar,x.separator)) x.rows
             
-    
-//let outputCsv (sw:StreamWriter) (opts:OutputOptions) (rows:seq<Row>) : unit = 
-//    Seq.iter (outputRow sw opts) rows
+    member x.SaveToString () : string = 
+        let sb = new StringBuilder()
+        match x.headers with
+        | Some xs -> 
+            let row = new Row(List.map csvString xs)
+            row.BufferOutput(sb, x.quoteChar, x.separator)
+        | None -> ()
+        Seq.iter (fun (row:Row) -> row.BufferOutput(sb,x.quoteChar,x.separator)) x.rows
+        sb.ToString()
+
+
 
 
 
