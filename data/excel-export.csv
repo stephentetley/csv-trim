@@ -1,0 +1,5 @@
+﻿Id,Value,Comment
+1,Hello world,"No comma, no quotes"
+2,"Hello, world","Comma, no quotes"
+3,"""Hello, world""",Comma and quotes
+4,"""Hello word""","Quotes, no comma"
