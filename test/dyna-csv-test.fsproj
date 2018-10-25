@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <None Include="Test01.fsx" />
+    <None Include="Test02.fsx" />
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
