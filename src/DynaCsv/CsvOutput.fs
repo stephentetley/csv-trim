@@ -5,235 +5,177 @@ module DynaCsv.CsvOutput
 
 open System
 open System.IO
-
-// TODO - This will be refactored. 
-// We don't need to expose a monadic interface, we just want to 
-// be able to write Csv that doesn't have a static schema.
-// This is the problem / shortcoming of FSharp.Data's 
-// CsvProvider.
-
-// 
+open System.Text
 
 
-
-// Quoting always uses double quote (it is not user customizable).
-// I can't find much evidence that it should be user customizable.
-
-type Separator = string
-
-let quoteField (input:string) : string = 
-    match input with
-    | null -> "\"\""
-    | _ -> sprintf "\"%s\"" (input.Replace("\"", "\"\""))
-
-/// Quote a field containing comma
+/// The quoting behavior of Excel appears to be to be dynamic.
+/// Strings are quoted if the contain the quote character or the separator.
+/// Quoting is piecemeal on individual cell values it is not "controlled" by the column.
 ///
-/// Warning- getting the arg order wrong of sep and input can lead to 
-/// horrible to locate bugs. Possibly Separator should be wrapped but that seems an overhead too far.
-let private testQuoteField (sep:Separator) (input:string)  : string = 
+/// An example:
+///
+/// Id,Value,Comment
+/// 1,Hello world,"No comma, no quotes"
+/// 2,"Hello, world","Comma, no quotes"
+/// 3,"""Hello, world""",Comma and quotes
+/// 4,"""Hello word""","Quotes, no comma"
+
+
+let quotedValue (quote:char) (input:string) : string = 
     match input with
-    | null -> "\"\""
+    | null -> sprintf "%c%c" quote quote
     | _ -> 
-        if input.Contains(sep) || input.Contains("\n") then 
-            quoteField input 
-        else input
+        let quoteStr = quote.ToString()
+        let text = input.Replace(quoteStr, quoteStr+quoteStr) 
+        sprintf "%c%s%c" quote text quote
+
+let quoteIfNecessary (quote:char) (separator:char) (input:string) : string = 
+    if input.Contains(quote.ToString()) || input.Contains(separator.ToString()) || input.Contains("\n") then
+        quotedValue quote input
+    else input
 
 
-type CsvOutput<'a> = 
-    CsvOutput of (StreamWriter -> Separator -> 'a)
 
-let inline private apply1 (ma : CsvOutput<'a>) (handle:StreamWriter) (sep:Separator) : 'a = 
-    match ma with | CsvOutput f -> f handle sep
+/// A cell can be always quoted (Quoted) or quoted if it contains
+/// the quote character or the separator.
+type Cell = 
+    | Cell of String
+    | Quoted of String
+    override x.ToString() = 
+        match x with 
+        | Cell(s) -> s
+        | Quoted(s) -> sprintf "'%s'" s
 
-let private returnM (x:'a) : CsvOutput<'a> = 
-    CsvOutput <| fun handle sep -> x
-
-let private bindM (ma:CsvOutput<'a>) (f : 'a -> CsvOutput<'b>) : CsvOutput<'b> =
-    CsvOutput <| fun handle sep -> 
-        let a = apply1 ma handle sep in apply1 (f a) handle sep
-
-// Hard failure (exception) , the monad has real notion of failure
-let fail : CsvOutput<'a> = 
-    CsvOutput (fun handle sep -> failwith "CsvOutput fail")
-
-type CsvOutputBuilder() = 
-    member self.Return x        = returnM x
-    member self.Bind (p,f)      = bindM p f
-    member self.Zero ()         = returnM ()
-
-let csvOutput:CsvOutputBuilder = new CsvOutputBuilder()
-
-// Common operations
-let fmapM (fn:'a -> 'b) (ma:CsvOutput<'a>) : CsvOutput<'b> = 
-    CsvOutput <| fun handle sep ->
-        let a = apply1 ma handle sep in fn a
-
-
-let mapM (fn: 'a -> CsvOutput<'b>) (xs: 'a list) : CsvOutput<'b list> = 
-    let rec work ac list = 
-        match list with
-        | y :: ys -> bindM (fn y) (fun b -> work (b::ac) ys)
-        | [] -> returnM <| List.rev ac
-    work [] xs
-
-let forM (xs:'a list) (fn:'a -> CsvOutput<'b>) : CsvOutput<'b list> = mapM fn xs
-
-
-let mapMz (fn: 'a -> CsvOutput<'b>) (xs: 'a list) : CsvOutput<unit> = 
-    let rec work list = 
-        match list with
-        | y :: ys -> bindM (fn y) (fun _ -> work ys)
-        | [] -> returnM ()
-    work xs
-
-let forMz (xs:'a list) (fn:'a -> CsvOutput<'b>) : CsvOutput<unit> = mapMz fn xs
-
-let traverseM (fn: 'a -> CsvOutput<'b>) (source:seq<'a>) : CsvOutput<seq<'b>> = 
-    CsvOutput <| fun handle sep ->
-        Seq.map (fun x -> let mf = fn x in apply1 mf handle sep) source
-
-
-let traverseiM (fn: int ->  'a -> CsvOutput<'b>) (source:seq<'a>) : CsvOutput<seq<'b>> = 
-    CsvOutput <| fun handle sep ->
-        Seq.mapi (fun ix x -> let mf = fn ix x in apply1 mf handle sep) source
-
-
-// Need to be strict - hence use a fold
-let traverseMz (fn: 'a -> CsvOutput<'b>) (source:seq<'a>) : CsvOutput<unit> = 
-    CsvOutput <| fun handle sep ->
-        Seq.fold (fun ac x -> 
-                    let ans  = apply1 (fn x) handle sep in ac) 
-                 () 
-                 source 
-
-let traverseiMz (fn: int -> 'a -> CsvOutput<'b>) (source:seq<'a>) : CsvOutput<unit> = 
-    CsvOutput <| fun handle sep ->
-        ignore <| Seq.fold (fun ix x -> 
-                            let ans  = apply1 (fn ix x) handle sep in (ix+1))
-                            0
-                            source 
-
-let mapiM (fn: 'a -> int -> CsvOutput<'b>) (xs: 'a list) : CsvOutput<'b list> = 
-    let rec work ac ix list = 
-        match list with
-        | y :: ys -> bindM (fn y ix) (fun b -> work (b::ac) (ix+1) ys)
-        | [] -> returnM <| List.rev ac
-    work [] 0 xs
-
-let mapiMz (fn: 'a -> int -> CsvOutput<'b>) (xs: 'a list) : CsvOutput<unit> = 
-    let rec work ix list = 
-        match list with
-        | y :: ys -> bindM (fn y ix) (fun _ -> work (ix+1) ys)
-        | [] -> returnM ()
-    work 0 xs
-
-// CsvOutput-specific operations
-
-type CsvOptions = 
-    { Separator: string }
-
-/// Should monadic function be first or second argument?
-let runCsvOutput (options:CsvOptions) (fileName:string) (ma:CsvOutput<'a>) : 'a =
-    use sw = new System.IO.StreamWriter(fileName)
-    apply1 ma sw options.Separator
-
-let outputToNew (options:CsvOptions) (ma:CsvOutput<'a>) (fileName:string) : 'a =
-    runCsvOutput options fileName ma 
-
-let askSep : CsvOutput<Separator> = 
-    CsvOutput <| fun _ sep -> sep
-
-let tellRowStrings (values:string list) : CsvOutput<unit> =
-    CsvOutput <| fun handle sep ->
-        let line = String.concat sep values
-        handle.WriteLine line
-
-let tellHeaders (values:string list) : CsvOutput<unit> =
-    bindM askSep 
-          (fun sep -> tellRowStrings <| List.map (fun s -> testQuoteField sep s) values)
-
-
-// Design note - previous CellWriter had a phantom type paramater
-// but as CellWriter was never a monad it wasn't actually useful.
-
-type CellWriter = private Wrapped of (Separator -> string)
-type RowWriter = CellWriter list
-
-let private getWrapped (sep:Separator) (cellWriter:CellWriter) : string = 
-    match cellWriter with 
-    | Wrapped(fn) -> match fn sep with | null -> "" | s -> s
-
-
-let tellRow (rowWriter:RowWriter) : CsvOutput<unit> =
-    bindM askSep (fun sep -> List.map (getWrapped sep) rowWriter |> tellRowStrings )
-
-    
-let tellRows (rowWriters:seq<RowWriter>) : CsvOutput<unit> =
-    traverseMz tellRow rowWriters
-
-
-let tellRecord (a:'record) (writeProc:'record -> RowWriter) : CsvOutput<unit> =
-    bindM askSep (fun sep -> List.map (getWrapped sep) (writeProc a) |> tellRowStrings )
-
-
-let tellRecords (records:seq<'a>) (writeProc:'a -> RowWriter) : CsvOutput<unit> = 
-    traverseMz (tellRow << writeProc) records
-
-let tellRecordsi (records:seq<'a>) (writeProc:int -> 'a -> RowWriter) : CsvOutput<unit> = 
-    traverseiMz (fun a ix -> tellRow <| writeProc a ix) records
-
-
-// Procedures prefixed write_ rather than tell_ are expected to be used to generate
-// all the output in a file.
-
-
-let writeRowsWithHeaders (headers:string list) (rows:seq<RowWriter>) : CsvOutput<unit> = 
-    csvOutput { 
-        do! tellHeaders headers
-        do! traverseMz tellRow rows }
-
-let writeRecordsWithHeaders (headers:string list) (records:seq<'a>) (writeRow:'a -> RowWriter) : CsvOutput<unit> = 
-    csvOutput { 
-        do! tellHeaders headers
-        do! tellRecords records writeRow }
-
-
-let writeRecordsWithHeadersi (headers:string list) (records:seq<'a>) (writeRow:int -> 'a -> RowWriter) : CsvOutput<unit> = 
-    csvOutput { 
-        do! tellHeaders headers
-        do! tellRecordsi records writeRow }
-
-
-// Should testQuotedString be the default?
-let tellObj (value:obj) : CellWriter = 
-    Wrapped <| fun sep -> value.ToString() |> testQuoteField sep 
-
-let tellBool (value:bool) : CellWriter = tellObj (value :> obj)
-let tellDateTime (value:System.DateTime) : CellWriter = tellObj (value :> obj)
-let tellDecimal (value:decimal) : CellWriter = tellObj (value :> obj)
-let tellFloat (value:float) : CellWriter = tellObj (value :> obj)
-let tellGuid (value:System.Guid) : CellWriter = tellObj (value :> obj)   
-let tellInteger (value:int) : CellWriter = tellObj (value :> obj)
-let tellInteger64 (value:int64) : CellWriter = tellObj (value :> obj)
-
-
-let tellInt (value:int) : CellWriter = tellObj (value :> obj)
-let tellInt64 (value:int64) : CellWriter = tellObj (value :> obj)
-
-
-let tellString (value:string) : CellWriter = Wrapped <| fun sep -> testQuoteField sep value
-let tellQuotedString (value:string) : CellWriter = Wrapped <| fun _ -> quoteField value
-
-let tellOption (teller:'a -> CellWriter) (value:option<'a>) : CellWriter = 
-    match value with 
-    | None -> tellString ""
-    | Some a -> teller a
-
-let tellNullable (teller:'a -> CellWriter) (value:Nullable<'a>) : CellWriter = 
-    if value.HasValue then teller value.Value else tellString ""
-   
-
-
+    member internal x.Output (quoteChar:char, separator:char) : string = 
+        match x with
+        | Cell s -> quoteIfNecessary quoteChar separator s
+        | Quoted s -> quotedValue quoteChar s
     
 
+
+type OutputOptions = 
+    { Separator: char     
+      Quote: char }
+
+let defaultOutputOptions : OutputOptions = 
+    { Separator = ','; Quote = '"' }
+
+[<Struct>]
+type Row = 
+    val private cells : Cell []
+
+    new (cells: Cell list) = { cells = List.toArray cells }
+    new (cells: Cell []) = { cells = cells }
+
+    member x.Cells
+        with get() = x.cells
+
+    member internal x.StreamOutput (sw:StreamWriter, quoteChar:char, separator:char) : unit = 
+        let helper (ix:int) (cell:Cell) : unit = 
+            if ix > 0 then 
+                sw.Write(separator); sw.Write (cell.Output(quoteChar,separator))
+            else
+                sw.Write (cell.Output(quoteChar,separator))
+        Array.iteri helper x.cells; sw.Write("\n")
+
+    member internal x.BufferOutput (sb:StringBuilder, quoteChar:char, separator:char) : unit =
+        let helper (ix:int) (x:Cell) : unit = 
+            if ix > 0 then 
+                sb.Append(separator) |> ignore
+                sb.Append(x.Output(quoteChar,separator)) |> ignore
+            else
+                sb.Append(x.Output(quoteChar,separator)) |> ignore
+        Array.iteri helper x.cells; sb.Append("\n") |> ignore
+
+
+
+
+
+/// FSharp.Data API:
+/// table.Save(writer = sw, separator = ',', quote = '"' )
+/// table.SaveToString() 
+
+/// So favor an object oriented API.
+
+let defaultQuote : Char = '"'
+let defaultSeparator : Char = ','
+
+type Csv = 
+    val private headers : option<string list>
+    val mutable private separator : char
+    val mutable private quoteChar : char
+    val private rows : seq<Row>
+
+    new (headers: string list, rows : seq<Row>) = 
+        { headers = Some <| headers 
+        ; separator = defaultSeparator
+        ; quoteChar = defaultQuote
+        ; rows = rows }
     
+    new (rows : seq<Row>) = 
+        { headers = None 
+        ; separator = defaultSeparator
+        ; quoteChar = defaultQuote
+        ; rows = rows }
+
+    member x.Separator
+        with get() = x.separator
+        and  set(v:char) = x.separator <- v
+
+    member x.QuoteChar
+        with get() = x.quoteChar
+        and  set(v:char) = x.quoteChar <- v
+
+    member x.Save (sw:StreamWriter) : unit = 
+        match x.headers with
+        | Some xs -> 
+            let row = new Row(List.map Cell xs)
+            row.StreamOutput(sw,x.quoteChar, x.separator)
+        | None -> ()
+        Seq.iter (fun (row:Row) -> row.StreamOutput(sw,x.quoteChar,x.separator)) x.rows
+            
+    member x.SaveToString () : string = 
+        let sb = new StringBuilder()
+        match x.headers with
+        | Some xs -> 
+            let row = new Row(List.map Cell xs)
+            row.BufferOutput(sb, x.quoteChar, x.separator)
+        | None -> ()
+        Seq.iter (fun (row:Row) -> row.BufferOutput(sb,x.quoteChar,x.separator)) x.rows
+        sb.ToString()
+
+
+
+/// Prints 'true' or 'false' (unquoted).
+let csvBool (value:bool) : Cell = Cell <| value.ToString()
+
+let csvString (value:string) : Cell = Cell <| value
+
+let csvQuoted (value:string) : Cell = Quoted <| value
+
+
+let csvDateTime (value:System.DateTime) (format:string) : Cell = 
+    Cell <| value.ToString(format)
+
+let csvLongDate (value:System.DateTime) (format:string) : Cell = 
+    Cell <| value.ToLongDateString()
+
+let csvShortDate (value:System.DateTime) (format:string) : Cell = 
+    Cell <| value.ToShortDateString()
+
+let csvLongTime (value:System.DateTime) (format:string) : Cell = 
+    Cell <| value.ToLongTimeString()
+
+let csvShortTime (value:System.DateTime) (format:string) : Cell = 
+    Cell <| value.ToShortTimeString()
+
+let csvDecimal (value:decimal) : Cell = Cell <| value.ToString()
+let csvFloat (value:float) : Cell = Cell <| value.ToString()
+let csvGuid (value:System.Guid) : Cell = Cell <| value.ToString() 
+let csvInteger (value:int) : Cell = Cell <| value.ToString()
+let csvInteger64 (value:int64) : Cell = Cell <| value.ToString()
+
+
+let csvInt (value:int) : Cell = Cell <| value.ToString()
+let csvInt64 (value:int64) : Cell = Cell <| value.ToString()
+

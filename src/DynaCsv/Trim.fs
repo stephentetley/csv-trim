@@ -6,32 +6,40 @@ module DynaCsv.Trim
 open FSharp.Data
 
 open DynaCsv.Common
+open DynaCsv.CsvOutput
 
 type CsvTrimOptions = 
     { InputSeparator: string
+      InputQuote: char
       InputHasHeaders: bool
-      OutputSeparator: string }
+      OutputSeparator: char
+      OutputQuote:char }
 
 
 /// This one writes directly to a StreamWriter.
 /// Note - input text inside double quotes is not trimmed.
 let trimCsvFile (options:CsvTrimOptions) (inputFile:string) (outputFile:string) : unit =
-    let rowToTrimmedString (row:string []) : string = 
-        let sep = options.OutputSeparator
-        String.concat sep <| Array.map (fun (s:string) -> optQuote <| s.Trim()) row
-        
+
     let csvInput : CsvFile = 
-        CsvFile.Load(uri=inputFile, 
-            separators = options.InputSeparator,
-            hasHeaders = options.InputHasHeaders, 
-            quote= '"' )
-   
-    use sw = new System.IO.StreamWriter(outputFile)
-   
-    match csvInput.Headers with
-    | Some titles -> 
-        rowToTrimmedString titles |> sw.WriteLine
-    | None -> ()
+        providerReadCsv options.InputHasHeaders options.InputSeparator options.InputQuote inputFile 
+
+    let headers : option<string list> = 
+        match csvInput.Headers with
+        | None -> None
+        | Some arr -> Some <| Array.toList arr
     
-    Seq.iter (fun (row:CsvRow) -> 
-                row.Columns |> rowToTrimmedString |> sw.WriteLine) csvInput.Rows 
+    let providerRowToDyna (row1:CsvRow) : Row = 
+        new Row (Array.map (fun (s:string) -> csvString (s.Trim())) row1.Columns )
+        
+
+    let rows = Seq.map providerRowToDyna csvInput.Rows
+
+    let csv1 = 
+        match headers with
+        | None -> new Csv(rows = rows)
+        | Some headers -> new Csv(headers = headers, rows = rows)
+    csv1.Separator <- options.OutputSeparator
+    csv1.QuoteChar <- options.OutputQuote  
+
+    use sw = new System.IO.StreamWriter(outputFile)
+    csv1.Save(sw)

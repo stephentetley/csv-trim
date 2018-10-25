@@ -6,9 +6,9 @@
 open FSharp.Data
 
 #load "..\src\DynaCsv\Common.fs"
-#load "..\src\DynaCsv\CsvOutput2.fs"
+#load "..\src\DynaCsv\CsvOutput.fs"
 open DynaCsv.Common
-open DynaCsv.CsvOutput2
+open DynaCsv.CsvOutput
 
 let test01 () = 
     let inputPath = Path.Combine( __SOURCE_DIRECTORY__ , "..", @"data\hospitals.csv")

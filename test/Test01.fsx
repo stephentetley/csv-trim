@@ -12,12 +12,14 @@ open DynaCsv.Trim
 
 
 let test01 () = 
-    let input  = @"G:\work\Projects\rtu\AR-asset-expired-2011\BRADFORD_ESHOLT_STW_points.tab.csv"
-    let output = @"G:\work\Projects\rtu\AR-asset-expired-2011\BRADFORD_ESHOLT_STW_points.trim.csv"
+    let input  = @"G:\work\ADB-exports\RTS-outstations-Sept18.tab.csv"
+    let output = @"G:\work\ADB-exports\RTS-outstations-Sept18.trim.csv"
     let options = 
         { InputSeparator = "\t"
-          InputHasHeaders = true
-          OutputSeparator = "," }
+        ; InputQuote = '"'
+        ; InputHasHeaders = true
+        ; OutputSeparator = ','
+        ; OutputQuote = '"' }
     trimCsvFile options input output
 
 
@@ -26,8 +28,10 @@ let test02 () =
     let output = @"G:\work\Projects\rtu\AR-asset-expired-2011\site_list1.trim.csv"
     let options = 
         { InputSeparator = "\t"
-          InputHasHeaders = true
-          OutputSeparator = "," }
+        ; InputQuote = '"'
+        ; InputHasHeaders = true
+        ; OutputSeparator = ','
+        ; OutputQuote = '"' }
     trimCsvFile options input output
 
 
@@ -41,8 +45,11 @@ let test04 () =
     let sourceDir = @"G:\work\ADB-exports\rts"
     let options = 
         { InputSeparator = "\t"
-          InputHasHeaders = true
-          OutputSeparator = "," }
+        ; InputQuote = '"'
+        ; InputHasHeaders = true
+        ; OutputSeparator = ','
+        ; OutputQuote = '"' }
+          
 
     let trim1 (inputPath:string) : unit = 
         let outputPath = inputPath.Replace(".tab.csv", ".trim.csv")
