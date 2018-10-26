@@ -23,8 +23,8 @@ type CsvProTable =
 type CsvProRow = CsvProTable.Row
 
 let csvProTableHelper : ICsvProviderDestruct<CsvProTable>  =
-    let conv (row:CsvProRow) : Row = 
-        new Row([csvInt row.A; csvInt row.B; csvInt row.C ])
+    let conv (row:CsvProRow) : OutputRow = 
+        new OutputRow([csvInt row.A; csvInt row.B; csvInt row.C ])
     { new ICsvProviderDestruct<CsvProTable>
       with member this.GetHeaders table = table.Headers
            member this.GetRows table = table.Rows |> Seq.map conv }

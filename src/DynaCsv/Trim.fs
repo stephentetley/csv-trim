@@ -28,11 +28,11 @@ let trimCsvFile (options:CsvTrimOptions) (inputFile:string) (outputFile:string) 
         | None -> None
         | Some arr -> Some <| Array.toList arr
     
-    let providerRowToDyna (row1:CsvRow) : Row = 
-        new Row (Array.map (fun (s:string) -> csvString (s.Trim())) row1.Columns )
+    let providerRowToOutputRow (row1:CsvRow) : OutputRow = 
+        new OutputRow (Array.map (fun (s:string) -> csvString (s.Trim())) row1.Columns )
         
 
-    let rows = Seq.map providerRowToDyna csvInput.Rows
+    let rows = Seq.map providerRowToOutputRow csvInput.Rows
 
     let csv1 = 
         match headers with

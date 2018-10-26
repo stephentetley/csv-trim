@@ -5,6 +5,8 @@ module DynaCsv.DynamicCsv
 
 open FSharp.Data
 
+open DynaCsv.CsvOutput
+
 let private anonColumn (column:int) : string  = 
     let alphabet : char [] = [| 'A' .. 'Z' |]
     let char1 (ix:int) : char = 
@@ -38,7 +40,7 @@ type DynaRow =
             | (x :: xs), _ -> work xs [] ((x,null)::ac)
         { row = work columnNames values [] }
 
-
+    
 
 type DynamicCsv = 
     val private rows : seq<DynaRow>

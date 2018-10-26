@@ -6,6 +6,7 @@
 open FSharp.Data
 
 #load "..\src\DynaCsv\Common.fs"
+#load "..\src\DynaCsv\CsvOutput.fs"
 #load "..\src\DynaCsv\DynamicCsv.fs"
 open DynaCsv.Common
 open DynaCsv.DynamicCsv

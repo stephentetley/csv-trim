@@ -62,7 +62,7 @@ let defaultOutputOptions : OutputOptions =
     { Separator = ','; Quote = '"' }
 
 [<Struct>]
-type Row = 
+type OutputRow = 
     val private cells : Cell []
 
     new (cells: Cell list) = { cells = List.toArray cells }
@@ -110,40 +110,40 @@ let private defaultSeparator : Char = ','
 /// a dictionary manually.
 type ICsvProviderDestruct<'table> = 
     abstract member GetHeaders : 'table -> option<string []>
-    abstract member GetRows: 'table -> seq<Row>
+    abstract member GetRows: 'table -> seq<OutputRow>
 
 type CsvOutput = 
     val private headers : option<string list>
     val mutable private separator : char
     val mutable private quoteChar : char
-    val private rows : seq<Row>
+    val private rows : seq<OutputRow>
 
-    new (headers: string list, rows : seq<Row>) = 
+    new (headers: string list, rows : seq<OutputRow>) = 
         { headers = Some <| headers 
         ; separator = defaultSeparator
         ; quoteChar = defaultQuote
         ; rows = rows }
     
-    new (headers: string list, quote:char, separator:char, rows : seq<Row>) = 
+    new (headers: string list, quote:char, separator:char, rows : seq<OutputRow>) = 
         { headers = Some <| headers 
         ; separator = separator
         ; quoteChar = quote
         ; rows = rows }
 
 
-    new (headers: string [], rows : seq<Row>) = 
+    new (headers: string [], rows : seq<OutputRow>) = 
         { headers = Some <| Array.toList headers 
         ; separator = defaultSeparator
         ; quoteChar = defaultQuote
         ; rows = rows }
 
-    new (headers: string [], quote:char, separator:char, rows : seq<Row>) = 
+    new (headers: string [], quote:char, separator:char, rows : seq<OutputRow>) = 
         { headers = Some <| Array.toList headers 
         ; separator = separator
         ; quoteChar = quote
         ; rows = rows }
 
-    new (rows : seq<Row>) = 
+    new (rows : seq<OutputRow>) = 
         { headers = None 
         ; separator = defaultSeparator
         ; quoteChar = defaultQuote
@@ -153,7 +153,7 @@ type CsvOutput =
     new (csvFile:CsvFile) = 
         let sep : char = char csvFile.Separators
         let quote = csvFile.Quote
-        let rows : seq<Row> = Seq.map (fun (r:CsvRow) -> new Row(r)) csvFile.Rows 
+        let rows : seq<OutputRow> = Seq.map (fun (r:CsvRow) -> new OutputRow(r)) csvFile.Rows 
         { headers = Option.map Array.toList csvFile.Headers 
         ; separator = sep
         ; quoteChar = quote
@@ -173,10 +173,10 @@ type CsvOutput =
     member x.Save (sw:StreamWriter) : unit = 
         match x.headers with
         | Some xs -> 
-            let row = new Row(List.map Cell xs)
+            let row = new OutputRow(List.map Cell xs)
             row.StreamOutput(sw,x.quoteChar, x.separator)
         | None -> ()
-        Seq.iter (fun (row:Row) -> row.StreamOutput(sw,x.quoteChar,x.separator)) x.rows
+        Seq.iter (fun (row:OutputRow) -> row.StreamOutput(sw,x.quoteChar,x.separator)) x.rows
 
     member x.Save (path:string) : unit = 
         use sw = new System.IO.StreamWriter(path)
@@ -186,10 +186,10 @@ type CsvOutput =
         let sb = new StringBuilder()
         match x.headers with
         | Some xs -> 
-            let row = new Row(List.map Cell xs)
+            let row = new OutputRow(List.map Cell xs)
             row.BufferOutput(sb, x.quoteChar, x.separator)
         | None -> ()
-        Seq.iter (fun (row:Row) -> row.BufferOutput(sb,x.quoteChar,x.separator)) x.rows
+        Seq.iter (fun (row:OutputRow) -> row.BufferOutput(sb,x.quoteChar,x.separator)) x.rows
         sb.ToString()
 
     /// Note - ideally this would be a constrctor on Csv, but it causes a type problem
