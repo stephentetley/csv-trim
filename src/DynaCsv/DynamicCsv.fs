@@ -9,6 +9,8 @@ open DynaCsv.Common
 open DynaCsv.CsvOutput
 open DynaCsv.Record
 
+
+
 let private anonColumn (column:int) : string  = 
     let alphabet : char [] = [| 'A' .. 'Z' |]
     let char1 (ix:int) : char = 
@@ -56,8 +58,13 @@ type CsvFileOptions =
 
 type DynamicCsv = 
     val private rows : seq<DynaRow>
+    val mutable private separator : char
+    val mutable private quoteChar : char
 
-    new () = { rows = Seq.empty }
+
+    new () = { rows = Seq.empty
+             ; separator = defaultSeparator
+             ; quoteChar = defaultQuote }
 
     new (csvFile:CsvFile) = 
         let headers = 
@@ -67,7 +74,7 @@ type DynamicCsv =
         let makeRow (row:CsvRow) : DynaRow = 
             new DynaRow (columnNames = headers, values = Array.toList row.Columns )
         let rows = Seq.map makeRow csvFile.Rows
-        { rows = rows }
+        { rows = rows; separator = defaultSeparator; quoteChar = defaultQuote }
 
     new (options: CsvFileOptions, path:string) =
         let sep = options.Separator.ToString()
@@ -75,12 +82,25 @@ type DynamicCsv =
         new DynamicCsv (csvFile = csvFile)
 
 
+    member x.Separator
+        with get() = x.separator
+        and  set(v:char) = x.separator <- v
+
+    member x.QuoteChar
+        with get() = x.quoteChar
+        and  set(v:char) = x.quoteChar <- v
+
+
     member internal x.ToOutputCsv (fieldNames: string list) : CsvOutput = 
         let csvRows = Seq.map (fun (row:DynaRow) -> row.ToOutputRow(fieldNames)) x.rows
-        new CsvOutput(headers = fieldNames, rows = csvRows)
+        new CsvOutput(headers = fieldNames
+                     , rows = csvRows
+                     , separator = x.separator
+                     , quote = x.quoteChar )
     
     member x.SaveToString (fields: string list) : string = 
         let output = x.ToOutputCsv(fields) in output.SaveToString()
 
-
+    member x.SaveToString (fields: string []) : string = 
+        x.SaveToString(Array.toList fields)
         

@@ -9,6 +9,8 @@ open System.Text
 
 open FSharp.Data
 
+open DynaCsv.Common
+
 /// The quoting behavior of Excel appears to be to be dynamic.
 /// Strings are quoted if the contain the quote character or the separator.
 /// Quoting is piecemeal on individual cell values it is not "controlled" by the column.
@@ -100,8 +102,7 @@ type OutputRow =
 /// > table.SaveToString() 
 /// So favor an object oriented API.
 
-let private defaultQuote : Char = '"'
-let private defaultSeparator : Char = ','
+
 
 
 

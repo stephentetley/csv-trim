@@ -6,6 +6,9 @@ module DynaCsv.Common
 
 open FSharp.Data
 
+let internal defaultQuote : char = '"'
+let internal defaultSeparator : char = ','
+
 
 let quoteField (input:string) : string = 
     match input with

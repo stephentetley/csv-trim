@@ -19,5 +19,5 @@ let getHospitals () : CsvFile =
 
 let test01 () = 
     let dyna = new DynamicCsv(csvFile = getHospitals ())
-    dyna.SaveToString(["Name";"Telephone";"Grid Reference"])
+    dyna.SaveToString([| "Grid Reference"; "Name"; "Telephone" |])
 
