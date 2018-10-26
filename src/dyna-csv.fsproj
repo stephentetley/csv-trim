@@ -53,6 +53,7 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="DynaCsv\Common.fs" />
+    <Compile Include="DynaCsv\Record.fs" />
     <Compile Include="DynaCsv\CsvOutput.fs" />
     <Compile Include="DynaCsv\Trim.fs" />
     <Compile Include="DynaCsv\DynamicCsv.fs" />

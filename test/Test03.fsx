@@ -6,6 +6,7 @@
 open FSharp.Data
 
 #load "..\src\DynaCsv\Common.fs"
+#load "..\src\DynaCsv\Record.fs"
 #load "..\src\DynaCsv\CsvOutput.fs"
 #load "..\src\DynaCsv\DynamicCsv.fs"
 open DynaCsv.Common
@@ -18,4 +19,5 @@ let getHospitals () : CsvFile =
 
 let test01 () = 
     let dyna = new DynamicCsv(csvFile = getHospitals ())
-    printfn "%A" dyna
+    dyna.SaveToString(["Name";"Telephone";"Grid Reference"])
+

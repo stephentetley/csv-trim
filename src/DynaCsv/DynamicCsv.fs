@@ -5,7 +5,9 @@ module DynaCsv.DynamicCsv
 
 open FSharp.Data
 
+open DynaCsv.Common
 open DynaCsv.CsvOutput
+open DynaCsv.Record
 
 let private anonColumn (column:int) : string  = 
     let alphabet : char [] = [| 'A' .. 'Z' |]
@@ -22,24 +24,34 @@ let private anonColumn (column:int) : string  =
 
 let anonHeaders (count:int) : string list = 
     List.map anonColumn [0.. count-1]
-    
+
 
 
 // Records are heterogenous assoc lists
 type DynaRow = 
-    val private row : (string * string) list 
+    val private row : Record
 
-    new () = { row = [] }
+    new () = { row = Record.empty }
 
     /// Build a row from lists of columns and values.
     new (columnNames : string list, values: string list) = 
-        let rec work (ns: string list) (vs: string list) (ac:(string * string) list) = 
+        let rec work (ns: string list) (vs: string list) (ac:Record) = 
             match ns, vs with
-            | [], _ -> List.rev ac
-            | (x :: xs), (y :: ys) -> work xs ys ((x,y)::ac) 
-            | (x :: xs), _ -> work xs [] ((x,null)::ac)
-        { row = work columnNames values [] }
+            | [], _ -> ac
+            | (x :: xs), (y :: ys) -> work xs ys (extend x y ac) 
+            | (x :: xs), _ -> work xs [] (extend x null ac)
+        { row = work columnNames values Record.empty }
 
+    member internal x.ToOutputRow (fieldNames: string list) : OutputRow = 
+        let cells = 
+            List.map (fun name -> let o = select name x.row in Cell (o.ToString())) fieldNames
+        new OutputRow (cells= cells)
+        
+        
+type CsvFileOptions = 
+    { HasHeaders: bool 
+      Separator: char
+      Quote: char }
     
 
 type DynamicCsv = 
@@ -57,3 +69,18 @@ type DynamicCsv =
         let rows = Seq.map makeRow csvFile.Rows
         { rows = rows }
 
+    new (options: CsvFileOptions, path:string) =
+        let sep = options.Separator.ToString()
+        let csvFile = providerReadCsv options.HasHeaders sep options.Quote path
+        new DynamicCsv (csvFile = csvFile)
+
+
+    member internal x.ToOutputCsv (fieldNames: string list) : CsvOutput = 
+        let csvRows = Seq.map (fun (row:DynaRow) -> row.ToOutputRow(fieldNames)) x.rows
+        new CsvOutput(headers = fieldNames, rows = csvRows)
+    
+    member x.SaveToString (fields: string list) : string = 
+        let output = x.ToOutputCsv(fields) in output.SaveToString()
+
+
+        
