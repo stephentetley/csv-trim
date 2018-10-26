@@ -55,6 +55,10 @@ let labels (source:Record) : string list =
     let fn  ac (name:string,_) = if List.contains name ac then ac else (name :: ac)
     List.fold fn [] source.Fields  |> List.rev
 
+let mapField (name:string) (typecast:obj -> 'a) (fn:'a -> 'b) (r1:Record) : Record = 
+    let fn1 (arg:obj) :'b = fn (typecast arg)
+    update name (fn1 <| select name r1) r1
+
 
 let concatL (r1:Record) (r2:Record) : Record = 
     List.fold (fun ac (s,o) -> extend s o ac) r2 r1.Fields

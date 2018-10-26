@@ -35,6 +35,8 @@ type DynaRow =
 
     new () = { row = Record.empty }
 
+    private new (record:Record) = { row = record }
+
     /// Build a row from lists of columns and values.
     new (columnNames : string list, values: string list) = 
         let rec work (ns: string list) (vs: string list) (ac:Record) = 
@@ -47,8 +49,10 @@ type DynaRow =
     member internal x.ToOutputRow (fieldNames: string list) : OutputRow = 
         let cells = 
             List.map (fun name -> let o = select name x.row in Cell (o.ToString())) fieldNames
-        new OutputRow (cells= cells)
-        
+        new OutputRow (cells = cells)
+      
+    member x.MapField(name:string, typecast:obj->'a, update:'a -> 'b) : DynaRow = 
+        new DynaRow (mapField name typecast update x.row)
         
 type CsvFileOptions = 
     { HasHeaders: bool 
@@ -65,6 +69,9 @@ type DynamicCsv =
     new () = { rows = Seq.empty
              ; separator = defaultSeparator
              ; quoteChar = defaultQuote }
+
+    private new (rows:seq<DynaRow>, sep:char, quote:char) = 
+        { rows = rows; separator = sep; quoteChar = quote }
 
     new (csvFile:CsvFile) = 
         let headers = 
@@ -103,4 +110,7 @@ type DynamicCsv =
 
     member x.SaveToString (fields: string []) : string = 
         x.SaveToString(Array.toList fields)
-        
+
+    member x.Map (mapping:DynaRow -> DynaRow) : DynamicCsv = 
+        let rows = Seq.map mapping x.rows
+        new DynamicCsv (rows = rows, sep = x.separator, quote = x.quoteChar)

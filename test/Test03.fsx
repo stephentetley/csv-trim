@@ -21,3 +21,10 @@ let test01 () =
     let dyna = new DynamicCsv(csvFile = getHospitals ())
     dyna.SaveToString([| "Grid Reference"; "Name"; "Telephone" |])
 
+let test02 () = 
+    let dyna = new DynamicCsv(csvFile = getHospitals ())
+    let conv (row:DynaRow) = row.MapField("Grid Reference", (fun arg -> arg :?> string), (fun _ -> 0)) 
+    let dyna2 = dyna.Map(conv)
+    dyna2.SaveToString([| "Name"; "Telephone"; "Grid Reference"  |])
+
+
