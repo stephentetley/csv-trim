@@ -8,6 +8,7 @@ open System.IO
 #r @"FSharp.Data.dll"
 open FSharp.Data
 
+#load "..\src\DynaCsv\Common.fs"
 #load "..\src\DynaCsv\CsvOutput.fs"
 open DynaCsv.CsvOutput
 

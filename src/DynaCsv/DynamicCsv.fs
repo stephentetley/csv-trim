@@ -27,10 +27,14 @@ let private anonColumn (column:int) : string  =
 let anonHeaders (count:int) : string list = 
     List.map anonColumn [0.. count-1]
 
+type IFieldMapper<'a,'b> = 
+    abstract member FieldName : string
+    abstract member Typecast: obj -> 'a
+    abstract member Update: 'a -> 'b
 
 
 // Records are heterogenous assoc lists
-type DynaRow = 
+type Row = 
     val private row : Record
 
     new () = { row = Record.empty }
@@ -51,8 +55,10 @@ type DynaRow =
             List.map (fun name -> let o = select name x.row in Cell (o.ToString())) fieldNames
         new OutputRow (cells = cells)
       
-    member x.MapField(name:string, typecast:obj->'a, update:'a -> 'b) : DynaRow = 
-        new DynaRow (mapField name typecast update x.row)
+
+    member x.MapField(helper:IFieldMapper<'a,'b>) : Row = 
+        new Row (mapField helper.FieldName helper.Typecast helper.Update x.row)
+
         
 type CsvFileOptions = 
     { HasHeaders: bool 
@@ -60,8 +66,8 @@ type CsvFileOptions =
       Quote: char }
     
 
-type DynamicCsv = 
-    val private rows : seq<DynaRow>
+type DynaCsv = 
+    val private rows : seq<Row>
     val mutable private separator : char
     val mutable private quoteChar : char
 
@@ -70,7 +76,7 @@ type DynamicCsv =
              ; separator = defaultSeparator
              ; quoteChar = defaultQuote }
 
-    private new (rows:seq<DynaRow>, sep:char, quote:char) = 
+    private new (rows:seq<Row>, sep:char, quote:char) = 
         { rows = rows; separator = sep; quoteChar = quote }
 
     new (csvFile:CsvFile) = 
@@ -78,15 +84,15 @@ type DynamicCsv =
             match csvFile.Headers with
             | None -> anonHeaders csvFile.NumberOfColumns
             | Some arr -> Array.toList arr
-        let makeRow (row:CsvRow) : DynaRow = 
-            new DynaRow (columnNames = headers, values = Array.toList row.Columns )
+        let makeRow (row:CsvRow) : Row = 
+            new Row (columnNames = headers, values = Array.toList row.Columns )
         let rows = Seq.map makeRow csvFile.Rows
         { rows = rows; separator = defaultSeparator; quoteChar = defaultQuote }
 
     new (options: CsvFileOptions, path:string) =
         let sep = options.Separator.ToString()
         let csvFile = providerReadCsv options.HasHeaders sep options.Quote path
-        new DynamicCsv (csvFile = csvFile)
+        new DynaCsv (csvFile = csvFile)
 
 
     member x.Separator
@@ -99,7 +105,7 @@ type DynamicCsv =
 
 
     member internal x.ToOutputCsv (fieldNames: string list) : CsvOutput = 
-        let csvRows = Seq.map (fun (row:DynaRow) -> row.ToOutputRow(fieldNames)) x.rows
+        let csvRows = Seq.map (fun (row:Row) -> row.ToOutputRow(fieldNames)) x.rows
         new CsvOutput(headers = fieldNames
                      , rows = csvRows
                      , separator = x.separator
@@ -111,6 +117,6 @@ type DynamicCsv =
     member x.SaveToString (fields: string []) : string = 
         x.SaveToString(Array.toList fields)
 
-    member x.Map (mapping:DynaRow -> DynaRow) : DynamicCsv = 
+    member x.Map (mapping:Row -> Row) : DynaCsv = 
         let rows = Seq.map mapping x.rows
-        new DynamicCsv (rows = rows, sep = x.separator, quote = x.quoteChar)
+        new DynaCsv (rows = rows, sep = x.separator, quote = x.quoteChar)
