@@ -1,4 +1,9 @@
-﻿
+﻿// Copyright (c) Stephen Tetley 2018
+// License: BSD 3 Clause
+
+// A Prototype...
+
+
 // Records are heterogenous assoc lists
 type Record = (string * obj) list
 

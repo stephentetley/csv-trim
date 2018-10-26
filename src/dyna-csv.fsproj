@@ -55,6 +55,7 @@
     <Compile Include="DynaCsv\Common.fs" />
     <Compile Include="DynaCsv\CsvOutput.fs" />
     <Compile Include="DynaCsv\Trim.fs" />
+    <Compile Include="DynaCsv\DynamicCsv.fs" />
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
