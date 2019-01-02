@@ -1,7 +1,9 @@
 ﻿open System.IO
 
+#r "netstandard"
+
 // Use FSharp.Data for CSV reading
-#I @"..\packages\FSharp.Data.3.0.0-beta3\lib\net45"
+#I @"C:\Users\stephen\.nuget\packages\FSharp.Data\3.0.0\lib\netstandard2.0"
 #r @"FSharp.Data.dll"
 open FSharp.Data
 
@@ -12,7 +14,7 @@ open DynaCsv.CsvOutput
 
 let test01 () = 
     let inputPath = Path.Combine( __SOURCE_DIRECTORY__ , "..", @"data\hospitals.csv")
-    let csv = providerReadCsv true "\t" '"' inputPath
+    let csv : FSharp.Data.CsvFile = providerReadCsv true "\t" '"' inputPath
     printfn "%s" <| csv.ToString()
     printfn "%A" <| csv.Headers
     printfn "%A" << Seq.take 3 <| csv.Rows

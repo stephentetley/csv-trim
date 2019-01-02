@@ -1,14 +1,16 @@
 ﻿// Copyright (c) Stephen Tetley 2018
 // License: BSD 3 Clause
 
-open System.IO
+
+#r "netstandard"
 
 // Use FSharp.Data for CSV reading
-#I @"..\packages\FSharp.Data.3.0.0-beta3\lib\net45"
+#I @"C:\Users\stephen\.nuget\packages\FSharp.Data\3.0.0\lib\netstandard2.0"
 #r @"FSharp.Data.dll"
 open FSharp.Data
 
 
+open System.IO
 
 [<Literal>]
 let HOSPITALS =  __SOURCE_DIRECTORY__ + "\..\data\hospitals.csv"

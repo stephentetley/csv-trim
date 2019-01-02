@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="Test01.fsx" />
+    <None Include="Test02.fsx" />
+    <None Include="Test03.fsx" />
+    <None Include="CsvProvider01.fsx" />
+    <None Include="CsvProvider02.fsx" />
+    <None Include="TempRecords.fsx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FSharp.Data" Version="3.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\src\DynaCsv.fsproj" />
+  </ItemGroup>
+
+</Project>

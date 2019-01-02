@@ -1,19 +1,21 @@
 ﻿// Copyright (c) Stephen Tetley 2018
 // License: BSD 3 Clause
 
+#r "netstandard"
+
+
 open System.IO
 
+
 // Use FSharp.Data for CSV reading
-#I @"..\packages\FSharp.Data.3.0.0-beta3\lib\net45"
+#I @"C:\Users\stephen\.nuget\packages\FSharp.Data\3.0.0\lib\netstandard2.0"
 #r @"FSharp.Data.dll"
 open FSharp.Data
+
 
 #load "..\src\DynaCsv\Common.fs"
 #load "..\src\DynaCsv\CsvOutput.fs"
 open DynaCsv.CsvOutput
-
-
-
 
 
 type CsvProTable = 
@@ -43,7 +45,7 @@ let test02 () =
 let test03 () = 
     try 
         let csv1:obj = (new CsvProTable()) :> obj 
-        let csv2 = csv1 :?> CsvFile
+        let csv2 = csv1 :?> FSharp.Data.CsvFile
         let mycsv = new CsvOutput(csvFile = csv2)
         mycsv.SaveToString()
 
