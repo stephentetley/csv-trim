@@ -3,8 +3,6 @@
 
 #r "netstandard"
 #r "System.Xml.Linq.dll"
-
-
 open System.IO
 
 

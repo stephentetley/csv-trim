@@ -11,6 +11,7 @@
     <None Include="CsvProvider01.fsx" />
     <None Include="CsvProvider02.fsx" />
     <None Include="TempRecords.fsx" />
+    <None Include="TempNew.fsx" />
   </ItemGroup>
 
   <ItemGroup>

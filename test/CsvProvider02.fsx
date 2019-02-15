@@ -1,8 +1,9 @@
-﻿// Copyright (c) Stephen Tetley 2018
+﻿// Copyright (c) Stephen Tetley 2018,2019
 // License: BSD 3 Clause
 
-
 #r "netstandard"
+#r "System.Xml.Linq.dll"
+open System.IO
 
 // Use FSharp.Data for CSV reading
 #I @"C:\Users\stephen\.nuget\packages\FSharp.Data\3.0.0\lib\netstandard2.0"
