@@ -15,34 +15,23 @@ open FSharp.Data
 
 // New attempt for 2019...
 
-type CsvReadConfig = 
-    { HasHeaders:bool 
-      Separator: char
-      QuoteChar: char }
+let blankCsv () = 
+    use sr = new StringReader("")
+    CsvFile.Load(sr)
 
+let blankCsv1 (headers:string) = 
+    CsvFile.Parse(text = headers)
 
-let providerReadCsv (config:CsvReadConfig) (path:string) : CsvFile = 
-    CsvFile.Load( uri=path,
-        hasHeaders = config.HasHeaders,
-        separators = config.Separator.ToString(),
-        quote = config.QuoteChar )
+let demo01 () = 
+    let csv = blankCsv1 ("City,Country")
+    match csv.Headers with
+    | None -> printfn "#N/A"
+    | Some arr -> printfn "%O" (arr |> Array.toList)
+    printfn "Rows: %i" (csv.Rows |> Seq.length)
+    let row1 = new CsvRow(parent= csv, columns=[| "Leeds"; "UK" |])
+    // Append is "functional"
+    let csv1 = csv.Append <| List.toSeq [row1]
 
-
-let trimRow (row1:CsvRow) : CsvRow = 
-    for ix in 0 .. row1.Columns.Length - 1 do
-        row1.Columns.[ix] <- (row1.Columns.[ix].Trim())
-    row1    
-
-let trimRowFunc : System.Func<CsvRow,CsvRow> = 
-    new System.Func<CsvRow,CsvRow> (trimRow)
-
-let demo01 ()  = 
-    let config = { HasHeaders = true; Separator = '\t'; QuoteChar = '"'}
-    let csv = providerReadCsv config @"G:\work\ADB-exports\RTS_OUTSTATIONS.tab.csv"
-    let csv1 = csv.Map(trimRowFunc)
-    use sw = new System.IO.StreamWriter(@"G:\work\ADB-exports\RTS_OUTSTATIONS.trim2.csv")
-    csv1.Save(sw, separator=',', quote='"')
-
-
+    csv1.SaveToString () |> printfn "%s"
 
     
