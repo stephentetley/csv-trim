@@ -1,45 +1,40 @@
-﻿// Copyright (c) Stephen Tetley 2018
+﻿// Copyright (c) Stephen Tetley 2018,2019
 // License: BSD 3 Clause
 
 module DynaCsv.Trim
 
 open FSharp.Data
 
-open DynaCsv.Common
-open DynaCsv.CsvOutput
 
 type CsvTrimOptions = 
-    { InputSeparator: string
+    { InputSeparator: char
       InputQuote: char
       InputHasHeaders: bool
       OutputSeparator: char
       OutputQuote:char }
 
 
+let private trimRow (row1:CsvRow) : CsvRow = 
+    for ix in 0 .. row1.Columns.Length - 1 do
+        row1.Columns.[ix] <- (row1.Columns.[ix].Trim())
+    row1    
+
+let private trimRowFunc : System.Func<CsvRow,CsvRow> = 
+    new System.Func<CsvRow,CsvRow> (trimRow)
+
+
 /// This one writes directly to a StreamWriter.
 /// Note - input text inside double quotes is not trimmed.
 let trimCsvFile (options:CsvTrimOptions) (inputFile:string) (outputFile:string) : unit =
 
-    let csvInput : CsvFile = 
-        providerReadCsv options.InputHasHeaders options.InputSeparator options.InputQuote inputFile 
-
-    let headers : option<string list> = 
-        match csvInput.Headers with
-        | None -> None
-        | Some arr -> Some <| Array.toList arr
-    
-    let providerRowToOutputRow (row1:CsvRow) : OutputRow = 
-        new OutputRow (Array.map (fun (s:string) -> csvString (s.Trim())) row1.Columns )
-        
-
-    let rows = Seq.map providerRowToOutputRow csvInput.Rows
-
-    let csv1 = 
-        match headers with
-        | None -> new CsvOutput(rows = rows)
-        | Some headers -> new CsvOutput(headers = headers, rows = rows)
-    csv1.Separator <- options.OutputSeparator
-    csv1.QuoteChar <- options.OutputQuote  
-
+    let csv = CsvFile.Load(uri=inputFile, 
+                            separators = options.InputSeparator.ToString(),
+                            hasHeaders = options.InputHasHeaders, 
+                            quote = options.InputQuote )
+    let csv1 = csv.Map(trimRowFunc)
     use sw = new System.IO.StreamWriter(outputFile)
-    csv1.Save(sw)
+    csv1.Save(writer = sw, 
+                separator = options.OutputSeparator,
+                quote = options.OutputQuote)
+
+
