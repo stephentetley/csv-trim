@@ -10,6 +10,7 @@
     <Compile Include="DynaCsv\Record.fs" />
     <Compile Include="DynaCsv\CsvOutput.fs" />
     <Compile Include="DynaCsv\DynamicCsv.fs" />
+    <Compile Include="DynaCsv\DynaCsv.fs" />
   </ItemGroup>
 
   <ItemGroup>

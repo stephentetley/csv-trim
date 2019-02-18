@@ -9,6 +9,11 @@ open FSharp.Data
 let internal defaultQuote : char = '"'
 let internal defaultSeparator : char = ','
 
+let escapeDoubleQuote (input:string) : string = 
+    match input with
+    | null -> ""
+    | _ -> input.Replace("\"", "\"\"")
+
 
 let quoteField (input:string) : string = 
     match input with
