@@ -11,6 +11,7 @@ module DynaCsv =
 
     open DynaCsv.Common
     open System
+    open FSharp.Data.Runtime
 
     // Principles:
     // We want to reuse FSharp.Data for reading and writing Csv.
@@ -70,34 +71,58 @@ module DynaCsv =
 
     type Dyna2 = 
         val private CsvHeaders : option<string []>
-        val private CsvRows : seq<string []> 
+        val private CsvRows : array<string []>
 
-        new (headers:option<string []>, rows: seq<string []>) = 
+        new (headers:option<string []>, rows: array<string []>) = 
             { CsvHeaders = headers; CsvRows = rows }
 
         new (headers:string []) = 
-            { CsvHeaders = Some headers; CsvRows = Seq.empty} 
+            { CsvHeaders = Some headers; CsvRows = Array.empty} 
 
         new (headers:string list) = 
-            { CsvHeaders = Some (List.toArray headers); CsvRows = Seq.empty }
+            { CsvHeaders = Some (List.toArray headers); CsvRows = Array.empty }
 
-        new (rows: seq<string []>) = 
+        new (rows: array<string []>) = 
             { CsvHeaders = None; CsvRows = rows }
         
-        new (headers:string [], rows: seq<string []>) = 
+        new (headers:string [], rows: array<string []>) = 
             { CsvHeaders = Some headers; CsvRows = rows }
             
-        new (headers:string list, rows: seq<string []>) = 
+        new (headers:string list, rows: array<string []>) = 
             { CsvHeaders = Some (List.toArray headers); CsvRows = rows }
 
         member x.Headers with get () : option<string[]> = x.CsvHeaders
-        member x.Rows with get () : seq<string[]> = x.Rows
+        member x.Rows with get () : array<string[]> = x.CsvRows
 
-    let xlaterow (row:CsvRow) : DynaRow = Array.empty
+    let xlaterow (row:CsvRow) : DynaRow = row.Columns
 
-    let load (uri:string) : Dyna2 = 
-        let csv = CsvFile.Load(uri=uri, 
+
+
+    let load (path:string) : Dyna2 = 
+        printfn "load 1"
+        use csv = CsvFile.Load(uri = path,
                                 separators = ",",
                                 hasHeaders = true, 
                                 quote = '"' )
-        new Dyna2( headers = csv.Headers, rows = Seq.map xlaterow csv.Rows )
+        let (arr:DynaRow array) = Seq.map (fun (row:CsvRow) -> row.Columns) csv.Rows |> Seq.toArray
+        printfn "loaded %i rows" arr.Length
+        new Dyna2( headers = csv.Headers, rows = arr )
+
+    let makeHString (columns:string[]) : string = 
+        String.concat "," columns
+
+    let makeCsvRow (parent:CsvFile) (row:DynaRow) : CsvRow = 
+        new CsvRow(parent=parent, columns = row)
+        
+
+    let save (dcsv:Dyna2) (outputFile:string) : unit = 
+        let csv:CsvFile = 
+            match dcsv.Headers with
+            | Some arr -> CsvFile.Parse (text = makeHString arr, hasHeaders = true)
+            | None -> CsvFile.Parse(text = "", hasHeaders = false)
+        printfn "save 1"
+        let rows = dcsv.Rows |> Seq.map (makeCsvRow csv)
+        printfn "rows: %O" rows
+        let csv1 = dcsv.Rows |> Seq.map (makeCsvRow csv) |> csv.Append
+        printfn "%O" csv
+        csv1.Save (path=outputFile)

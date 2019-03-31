@@ -65,3 +65,21 @@ let demo02 () =
 let demo03 () = 
     let csv = new Dyna2(headers = ["City"; "Country" ])
     csv.ToString() 
+
+let inputPath = Path.Combine( __SOURCE_DIRECTORY__ , "..", @"data\hospitals.csv")
+let outputPath = Path.Combine( __SOURCE_DIRECTORY__ , "..", @"data\hospitals.1.csv")
+
+let demo04 () = 
+    printfn "Loading..."
+    let dcsv = load inputPath
+    printfn "Loaded."
+    match dcsv.Headers with
+    | Some arr -> printfn "Headers: %O" (Array.toList arr)
+    | None -> printfn "No headers"
+    printfn "Row Count: %i" dcsv.Rows.Length
+    // dcsv.Rows |> Seq.iter (printfn "%O") 
+    printfn "Saving..."
+    save dcsv outputPath
+
+
+
