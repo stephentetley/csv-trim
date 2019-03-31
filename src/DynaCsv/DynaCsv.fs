@@ -112,11 +112,36 @@ module DynaCsv =
     let makeCsvRow (parent:CsvFile) (row:DynaRow) : CsvRow = 
         new CsvRow(parent=parent, columns = row)
         
+    /// Makes a CsvFile with a dummy row.
+    /// We can't remove the dummy row at this point because `csv.Skip 1` 
+    /// changes the type to CsvFile<CsvRow>.
+    let makeDummy (rowCount:int) : CsvFile = 
+        let dummy =  List.replicate rowCount "1" |> String.concat ","
+        let csv1:CsvFile = CsvFile.Parse(text = dummy, hasHeaders = false)
+        csv1
+
+    /// Makes a CsvFile with a dummy row.
+    /// We can't remove the dummy row at this point because `csv.Skip 1` 
+    /// changes the type to CsvFile<CsvRow>.
+    let makeDummyHeaders (headers:string []) : CsvFile = 
+        let blank = List.replicate headers.Length "1" |> String.concat ","
+        let dummy = headers |> String.concat ","
+        let csv1:CsvFile = CsvFile.Parse(text = dummy + "\n" + blank , hasHeaders = true)
+        csv1
+
 
     let save (dcsv:Dyna2) (outputFile:string) : unit = 
-        let csv:CsvFile = 
+        let parent:CsvFile = 
             match dcsv.Headers with
-            | Some arr -> CsvFile.Parse (text = makeHString arr, hasHeaders = true)
-            | None -> CsvFile.Parse(text = "", hasHeaders = false)
-        let csv1 = dcsv.Rows |> Seq.map (makeCsvRow csv) |> csv.Append
-        csv1.Save (path=outputFile)
+            | Some arr -> makeDummyHeaders arr
+            | None -> 
+                match Seq.tryHead dcsv.Rows with
+                | None -> makeDummy 1
+                | Some row -> makeDummy row.Length
+        let rows:seq<CsvRow> = dcsv.Rows |> Seq.map (makeCsvRow parent)
+        let csv1 = parent.Skip 1
+        let csv2 = csv1.Append rows
+        csv2.Save outputFile
+
+
+

@@ -83,3 +83,14 @@ let demo04 () =
 
 
 
+let demo05 () = 
+    let outputPath = Path.Combine( __SOURCE_DIRECTORY__ , "..", @"data\blank.csv")
+    let dcsv = new Dyna2 (rows = [||])
+    save dcsv outputPath
+
+
+let demo05a () = 
+    let outputPath = Path.Combine( __SOURCE_DIRECTORY__ , "..", @"data\oneline.csv")
+    let row1 = [| "one"; "two"; "three" |]
+    let dcsv = new Dyna2 (rows = [| row1 |])
+    save dcsv outputPath
