@@ -76,7 +76,7 @@ let demo04 () =
     match dcsv.Headers with
     | Some arr -> printfn "Headers: %O" (Array.toList arr)
     | None -> printfn "No headers"
-    printfn "Row Count: %i" dcsv.Rows.Length
+    printfn "Row Count: %i" (dcsv.Rows |> Seq.toArray).Length
     // dcsv.Rows |> Seq.iter (printfn "%O") 
     printfn "Saving..."
     save dcsv outputPath

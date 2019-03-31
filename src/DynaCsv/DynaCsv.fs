@@ -71,16 +71,16 @@ module DynaCsv =
 
     type Dyna2 = 
         val private CsvHeaders : option<string []>
-        val private CsvRows : array<string []>
+        val private CsvRows : seq<string []>
 
-        new (headers:option<string []>, rows: array<string []>) = 
+        new (headers:option<string []>, rows: seq<string []>) = 
             { CsvHeaders = headers; CsvRows = rows }
 
         new (headers:string []) = 
-            { CsvHeaders = Some headers; CsvRows = Array.empty} 
+            { CsvHeaders = Some headers; CsvRows = Seq.empty} 
 
         new (headers:string list) = 
-            { CsvHeaders = Some (List.toArray headers); CsvRows = Array.empty }
+            { CsvHeaders = Some (List.toArray headers); CsvRows = Seq.empty }
 
         new (rows: array<string []>) = 
             { CsvHeaders = None; CsvRows = rows }
@@ -92,20 +92,18 @@ module DynaCsv =
             { CsvHeaders = Some (List.toArray headers); CsvRows = rows }
 
         member x.Headers with get () : option<string[]> = x.CsvHeaders
-        member x.Rows with get () : array<string[]> = x.CsvRows
+        member x.Rows with get () : seq<string[]> = x.CsvRows
 
     let xlaterow (row:CsvRow) : DynaRow = row.Columns
 
 
 
     let load (path:string) : Dyna2 = 
-        printfn "load 1"
         use csv = CsvFile.Load(uri = path,
                                 separators = ",",
                                 hasHeaders = true, 
                                 quote = '"' )
         let (arr:DynaRow array) = Seq.map (fun (row:CsvRow) -> row.Columns) csv.Rows |> Seq.toArray
-        printfn "loaded %i rows" arr.Length
         new Dyna2( headers = csv.Headers, rows = arr )
 
     let makeHString (columns:string[]) : string = 
@@ -120,9 +118,5 @@ module DynaCsv =
             match dcsv.Headers with
             | Some arr -> CsvFile.Parse (text = makeHString arr, hasHeaders = true)
             | None -> CsvFile.Parse(text = "", hasHeaders = false)
-        printfn "save 1"
-        let rows = dcsv.Rows |> Seq.map (makeCsvRow csv)
-        printfn "rows: %O" rows
         let csv1 = dcsv.Rows |> Seq.map (makeCsvRow csv) |> csv.Append
-        printfn "%O" csv
         csv1.Save (path=outputFile)
