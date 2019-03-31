@@ -12,10 +12,15 @@ module DynaCsv =
     open DynaCsv.Common
     open System
 
+    // Principles:
+    // We want to reuse FSharp.Data for reading and writing Csv.
+    // We want more "dynamism" than typed FSharp.Data offers.
 
 
-    [<Struct>]
+
     type DynaCsv<'row> = 
+        // TODO - too promiscuous, we only need (a,_) for headers and
+        // (_,b) for rows.
         | DynaCsv of FSharp.Data.CsvFile * Runtime.CsvFile<CsvRow>
         
         member internal x.Parent
@@ -60,3 +65,39 @@ module DynaCsv =
         let csv1 : CsvFile = dcsv.Csv.Map func :?> CsvFile
         DynaCsv(dcsv.Parent, csv1)
 
+
+    type DynaRow = string []
+
+    type Dyna2 = 
+        val private CsvHeaders : option<string []>
+        val private CsvRows : seq<string []> 
+
+        new (headers:option<string []>, rows: seq<string []>) = 
+            { CsvHeaders = headers; CsvRows = rows }
+
+        new (headers:string []) = 
+            { CsvHeaders = Some headers; CsvRows = Seq.empty} 
+
+        new (headers:string list) = 
+            { CsvHeaders = Some (List.toArray headers); CsvRows = Seq.empty }
+
+        new (rows: seq<string []>) = 
+            { CsvHeaders = None; CsvRows = rows }
+        
+        new (headers:string [], rows: seq<string []>) = 
+            { CsvHeaders = Some headers; CsvRows = rows }
+            
+        new (headers:string list, rows: seq<string []>) = 
+            { CsvHeaders = Some (List.toArray headers); CsvRows = rows }
+
+        member x.Headers with get () : option<string[]> = x.CsvHeaders
+        member x.Rows with get () : seq<string[]> = x.Rows
+
+    let xlaterow (row:CsvRow) : DynaRow = Array.empty
+
+    let load (uri:string) : Dyna2 = 
+        let csv = CsvFile.Load(uri=uri, 
+                                separators = ",",
+                                hasHeaders = true, 
+                                quote = '"' )
+        new Dyna2( headers = csv.Headers, rows = Seq.map xlaterow csv.Rows )

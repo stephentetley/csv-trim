@@ -58,4 +58,10 @@ let demo02 () =
     let csv1 = let row1 = [| "Leeds"; "UK" |] in csv.Append [row1]
     csv1.SaveToString() |> printfn "%s"
 
-    
+    csv1.Parent.Headers |> Option.defaultWith (fun _ -> Array.empty) |> Array.toList |> printfn "%O"
+    csv1.Csv.Rows |> Seq.iter (fun row -> printfn "%O" (row.Columns |> Array.toList))
+
+
+let demo03 () = 
+    let csv = new Dyna2(headers = ["City"; "Country" ])
+    csv.ToString() 
