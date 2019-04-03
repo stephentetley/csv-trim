@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <Compile Include="DynaCsv\Internal\Common.fs" />
+    <Compile Include="DynaCsv\Internal\UniCsv.fs" />
     <Compile Include="DynaCsv\Common.fs" />
     <Compile Include="DynaCsv\Trim.fs" />
     <Compile Include="DynaCsv\Record.fs" />

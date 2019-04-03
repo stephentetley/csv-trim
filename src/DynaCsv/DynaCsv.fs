@@ -94,9 +94,6 @@ module DynaCsv =
         member x.Headers with get () : option<string[]> = x.CsvHeaders
         member x.Rows with get () : seq<string[]> = x.CsvRows
 
-    let xlaterow (row:CsvRow) : DynaRow = row.Columns
-
-
 
     let load (path:string) : Dyna2 = 
         use csv = CsvFile.Load(uri = path,
