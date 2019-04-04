@@ -3,6 +3,7 @@
 
 namespace DynaCsv.Internal
 
+
 module UniCsv = 
 
     open System
@@ -22,17 +23,36 @@ module UniCsv =
 
 
     type UniCsv = 
-        val private CsvHeaders : option<string []>
-        val private CsvRows : seq<string []>
+        val private UcHeaders : option<string []>
+        val private UcRows : seq<string []>
 
 
-        new (headers:option<string []>, rows: seq<string []>) = 
-            { CsvHeaders = headers; CsvRows = rows }
+        new (headers: option<string []>, rows: seq<string []>) = 
+            { UcHeaders = headers; UcRows = rows }
 
 
-        member x.Headers with get () : option<string[]> = x.CsvHeaders
-        member x.Rows with get () : seq<string[]> = x.CsvRows
+        member x.Headers with get () : option<string[]> = x.UcHeaders
+        member x.Rows with get () : seq<string[]> = x.UcRows
 
+
+        /// Arity is is column count
+        member x.Arity 
+            with get () : int = 
+                match x.Headers with
+                | Some arr -> arr.Length
+                | None -> 
+                    match Seq.tryHead x.Rows with
+                    | Some row -> row.Length
+                    | _ -> 0
+
+        /// Length is number of Rows
+        member x.Length 
+            with get () : int = 
+                x.Rows |> Seq.length
+
+
+
+        /// Loading is strict
         static member Load (opts:CsvReadOptions, path:string) : UniCsv = 
             use csv = 
                 match opts.Encoding with
@@ -68,3 +88,10 @@ module UniCsv =
             let csv2 = csv1.Append rows
             csv2.Save(path = outputFile, separator = opts.Separator, quote = opts.Quote)
 
+        
+        member x.GetSlice(start:int option, finish:int option) : UniCsv = 
+            let start = defaultArg start 0
+            let finish = defaultArg finish (x.Length - 1)
+            let slice = x.UcRows |> Seq.toArray |> fun arr -> arr.[start..finish]
+            new UniCsv( headers = x.Headers, rows = slice )
+  

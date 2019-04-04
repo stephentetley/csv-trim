@@ -38,7 +38,7 @@ module Common =
         let headings = String.concat separators headers
         let dummy = makeDummyRow headers.Length separators
         let body = fromLines [ headings; dummy ]
-        CsvFile.Parse(text = body, hasHeaders = false, quote = quote, separators = separators)
+        CsvFile.Parse(text = body, hasHeaders = true, quote = quote, separators = separators)
 
 
         
