@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="Test01.fsx" />
+    <None Include="TestTrim01.fsx" />
     <None Include="Test02.fsx" />
     <None Include="Test03.fsx" />
     <None Include="CsvProvider01.fsx" />

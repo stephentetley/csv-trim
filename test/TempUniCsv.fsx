@@ -15,6 +15,8 @@ open System.Text
 #load "..\src\DynaCsv\Internal\UniCsv.fs"
 open DynaCsv.Internal.UniCsv
 
+let getDataFile (name:string) = Path.Combine( __SOURCE_DIRECTORY__ , "..\data", name)
+
 let inputPath = Path.Combine( __SOURCE_DIRECTORY__ , "..", @"data\hospitals.csv")
 let outputPath = Path.Combine( __SOURCE_DIRECTORY__ , "..", @"data\hospitals.1.csv")
 
@@ -28,6 +30,13 @@ let demo01 () =
     slice.Rows |> Seq.iter (printfn "%A")
     printfn "Rows: %i" slice.Length
 
+
+let demo02 () = 
+    let inpath = getDataFile "weather-horizontal.csv"
+    let outpath = getDataFile "weather-vertical.csv"
+    let horizontal = UniCsv.Load( { Separators = ","; Quote = '"' ; HasHeaders = true; Encoding = Some Encoding.UTF8 }, inpath)
+    let vertical = horizontal.Transpose ()
+    vertical.Save({ Separator = ','; Quote = '"'}, outpath)
 
 
 

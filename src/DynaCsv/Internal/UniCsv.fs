@@ -21,6 +21,7 @@ module UniCsv =
         { Separator: char
           Quote: char }
 
+    type UniCsvRow = string []
 
     type UniCsv = 
         val private UcHeaders : option<string []>
@@ -93,5 +94,54 @@ module UniCsv =
             let start = defaultArg start 0
             let finish = defaultArg finish (x.Length - 1)
             let slice = x.UcRows |> Seq.toArray |> fun arr -> arr.[start..finish]
-            new UniCsv( headers = x.Headers, rows = slice )
+            new UniCsv ( headers = x.Headers, rows = slice )
   
+  
+        member x.Take(count:int) : UniCsv = x.[0..count-1]
+
+        member x.Skip(count:int) : UniCsv = x.[count..]
+
+        member x.Map (mapping: UniCsvRow -> UniCsvRow) : UniCsv = 
+            let rows = Seq.map mapping x.UcRows
+            new UniCsv ( headers = x.Headers, rows = rows )
+
+        member x.MapHeaders (mapping: string[] -> string[]) : UniCsv = 
+            let headers = Option.map mapping x.UcHeaders
+            new UniCsv ( headers = headers, rows = x.UcRows )
+
+        member x.DropHeaders () : UniCsv = new UniCsv (headers = None, rows = x.UcRows )
+            
+
+        /// "Pull up" the first row of data to make the headers of the Csv file.
+        /// If the data has headers they will be replaced.
+        member x.PullUpHeaders () : UniCsv = 
+            match Seq.tryHead x.UcRows with
+            | None -> new UniCsv (headers = None, rows = Seq.empty )
+            | Some hd -> 
+                // Seq is know to have at least one element...
+                let rest = Seq.skip 1 x.UcRows
+                new UniCsv (headers = Some hd, rows = rest )
+
+        /// "Push down" the headers of the Csv File making them the first row of data.
+        /// If there are no headers the input is returned as is.
+        member x.PushDownHeaders () : UniCsv = 
+            match x.UcHeaders with
+            | None -> new UniCsv (headers = None, rows = Seq.empty )
+            | Some hd -> 
+                // Seq is know to have at least one element...
+                let rest = seq { yield hd; yield! x.UcRows }
+                new UniCsv (headers = None, rows = rest )
+
+
+        /// TODO curently drops headers...
+        member x.Transpose () : UniCsv = 
+            let src = x.PushDownHeaders ()
+            let rows = src.UcRows |> Seq.transpose |> Seq.map Seq.toArray
+            new UniCsv ( headers = None, rows = rows )
+
+    let trimCsv (src:UniCsv) : UniCsv = 
+        let trimRow (row1:UniCsvRow) : UniCsvRow = row1 |> Array.map (fun s -> s.Trim())
+        let csv1 = src.MapHeaders trimRow
+        csv1.Map trimRow
+        
+        
