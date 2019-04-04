@@ -38,5 +38,10 @@ let demo02 () =
     let vertical = horizontal.Transpose ()
     vertical.Save({ Separator = ','; Quote = '"'}, outpath)
 
-
-
+/// TODO - provide non-proprietary sample data
+let demo03 () = 
+    let inpath = @"G:\work\ADB-exports\RTS-outstations-Sept18.tab.csv"
+    let outpath = @"G:\work\ADB-exports\RTS-outstations-Sept18.trim2.csv"
+    let ucsv = UniCsv.Load( { Separators = "\t"; Quote = '"' ; HasHeaders = false; Encoding = None }, inpath)
+    let output = trimCsv ucsv
+    output.Save({ Separator = ','; Quote = '"'}, outpath) 

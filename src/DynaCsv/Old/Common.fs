@@ -2,7 +2,7 @@
 // License: BSD 3 Clause
 
 
-module DynaCsv.Common
+module DynaCsv.Old.Common
 
 open FSharp.Data
 

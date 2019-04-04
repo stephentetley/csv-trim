@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Stephen Tetley 2018,2019
 // License: BSD 3 Clause
 
-module DynaCsv.DynamicCsv
+module DynaCsv.Old.DynamicCsv
 
 open FSharp.Data
 
-open DynaCsv.Common
-open DynaCsv.CsvOutput
-open DynaCsv.Record
+open DynaCsv.Old.Common
+open DynaCsv.Old.CsvOutput
+open DynaCsv.Old.Record
 
 
 

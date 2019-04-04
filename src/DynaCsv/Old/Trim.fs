@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Stephen Tetley 2018,2019
 // License: BSD 3 Clause
 
-module DynaCsv.Trim
+module DynaCsv.Old.Trim
 
 open FSharp.Data
 

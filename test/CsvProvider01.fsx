@@ -12,9 +12,9 @@ open System.IO
 open FSharp.Data
 
 
-#load "..\src\DynaCsv\Common.fs"
-#load "..\src\DynaCsv\CsvOutput.fs"
-open DynaCsv.CsvOutput
+#load "..\src\DynaCsv\Old\Common.fs"
+#load "..\src\DynaCsv\Old\CsvOutput.fs"
+open DynaCsv.Old.CsvOutput
 
 
 type CsvProTable = 

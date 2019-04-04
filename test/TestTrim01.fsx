@@ -11,10 +11,10 @@ open System.IO
 #r @"FSharp.Data.dll"
 open FSharp.Data
 
-#load "..\src\DynaCsv\Common.fs"
-#load "..\src\DynaCsv\CsvOutput.fs"
-#load "..\src\DynaCsv\Trim.fs"
-open DynaCsv.Trim
+#load "..\src\DynaCsv\Old\Common.fs"
+#load "..\src\DynaCsv\Old\CsvOutput.fs"
+#load "..\src\DynaCsv\Old\Trim.fs"
+open DynaCsv.Old.Trim
 
 
 let test01 () = 

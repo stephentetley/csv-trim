@@ -2,7 +2,7 @@
 // License: BSD 3 Clause
 
 
-module DynaCsv.Record
+module DynaCsv.Old.Record
 
 
 [<Struct>]

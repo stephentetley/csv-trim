@@ -10,12 +10,12 @@ open System.IO
 #r @"FSharp.Data.dll"
 open FSharp.Data
 
-#load "..\src\DynaCsv\Common.fs"
-#load "..\src\DynaCsv\Record.fs"
-#load "..\src\DynaCsv\CsvOutput.fs"
-#load "..\src\DynaCsv\DynamicCsv.fs"
-open DynaCsv.Common
-open DynaCsv.DynamicCsv
+#load "..\src\DynaCsv\Old\Common.fs"
+#load "..\src\DynaCsv\Old\Record.fs"
+#load "..\src\DynaCsv\Old\CsvOutput.fs"
+#load "..\src\DynaCsv\Old\DynamicCsv.fs"
+open DynaCsv.Old.Common
+open DynaCsv.Old.DynamicCsv
 
 
 let getHospitals () : FSharp.Data.CsvFile = 

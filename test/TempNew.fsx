@@ -14,9 +14,9 @@ open System.IO
 #r @"FSharp.Data.dll"
 open FSharp.Data
 
-#load "..\src\DynaCsv\Common.fs"
-#load "..\src\DynaCsv\DynaCsv.fs"
-open DynaCsv
+#load "..\src\DynaCsv\Old\Common.fs"
+#load "..\src\DynaCsv\Old\DynaCsv.fs"
+open DynaCsv.Old
 
 // New attempt for 2019...
 

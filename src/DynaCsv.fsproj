@@ -7,12 +7,12 @@
   <ItemGroup>
     <Compile Include="DynaCsv\Internal\Common.fs" />
     <Compile Include="DynaCsv\Internal\UniCsv.fs" />
-    <Compile Include="DynaCsv\Common.fs" />
-    <Compile Include="DynaCsv\Trim.fs" />
-    <Compile Include="DynaCsv\Record.fs" />
-    <Compile Include="DynaCsv\CsvOutput.fs" />
-    <Compile Include="DynaCsv\DynamicCsv.fs" />
-    <Compile Include="DynaCsv\DynaCsv.fs" />
+    <Compile Include="DynaCsv\Old\Common.fs" />
+    <Compile Include="DynaCsv\Old\Trim.fs" />
+    <Compile Include="DynaCsv\Old\Record.fs" />
+    <Compile Include="DynaCsv\Old\CsvOutput.fs" />
+    <Compile Include="DynaCsv\Old\DynamicCsv.fs" />
+    <Compile Include="DynaCsv\Old\DynaCsv.fs" />
   </ItemGroup>
 
   <ItemGroup>

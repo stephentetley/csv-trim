@@ -1,17 +1,15 @@
 ﻿// Copyright (c) Stephen Tetley 2019
 // License: BSD 3 Clause
 
-namespace DynaCsv
+namespace DynaCsv.Old
 
 [<AutoOpen>]
 module DynaCsv = 
     
-    open System.IO
     open FSharp.Data
 
-    open DynaCsv.Common
+    open DynaCsv.Old.Common
     open System
-    open FSharp.Data.Runtime
 
     // Principles:
     // We want to reuse FSharp.Data for reading and writing Csv.

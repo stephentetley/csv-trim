@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Stephen Tetley 2018
 // License: BSD 3 Clause
 
-module DynaCsv.CsvOutput
+module DynaCsv.Old.CsvOutput
 
 open System
 open System.IO
@@ -9,7 +9,7 @@ open System.Text
 
 open FSharp.Data
 
-open DynaCsv.Common
+open DynaCsv.Old.Common
 
 /// The quoting behavior of Excel appears to be to be dynamic.
 /// Strings are quoted if the contain the quote character or the separator.
