@@ -12,6 +12,9 @@ open FSharp.Data
 
 
 open System.IO
+open FSharp.Reflection
+
+
 
 [<Literal>]
 let HOSPITALS =  __SOURCE_DIRECTORY__ + "\..\data\hospitals.csv"
@@ -40,3 +43,30 @@ let test02 () =
     let f2 =  (getHosiptals ()).Map (fun (r:HospitalRow) -> hideAddress r )
     printfn "%A" f1.Rows 
     printfn "%A" f2.Rows
+
+let hospitalRowType = typeof<HospitalRow>
+
+let test03 () = 
+    printfn "%s" hospitalRowType.AssemblyQualifiedName
+    let headers = Option.defaultValue Array.empty <| (getHosiptals ()).Headers
+    let typeNames = FSharpType.GetTupleElements(hospitalRowType) |> Array.map (fun ty -> ty.AssemblyQualifiedName)
+    (headers, typeNames)
+
+    // A HospitalRow is a SystemTuple not a record
+
+
+type MyTuple3 = int * int * int
+
+let myTuple3Type = typeof<MyTuple3>
+
+let test04 () = 
+    FSharpType.GetTupleElements(myTuple3Type)
+
+type MyRecord = { Book : string; Author : string } 
+
+let test05 () = 
+    let myRecordType = typeof<MyRecord>
+    myRecordType.AssemblyQualifiedName
+    // A HospitalRow is a SystemTuple not a record
+
+
