@@ -8,7 +8,7 @@ open System.IO
 open System.Text
 
 // Use FSharp.Data for CSV reading
-#I @"C:\Users\stephen\.nuget\packages\FSharp.Data\3.0.1\lib\netstandard2.0"
+#I @"C:\Users\stephen\.nuget\packages\FSharp.Data\3.1.1\lib\netstandard2.0"
 #r @"FSharp.Data.dll"
 
 #load "..\src\DynaCsv\Internal\Common.fs"
