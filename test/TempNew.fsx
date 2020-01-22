@@ -10,7 +10,7 @@ open System.IO
 // open Microsoft.FSharp.Collections
 
 // Use FSharp.Data for CSV reading
-#I @"C:\Users\stephen\.nuget\packages\FSharp.Data\3.1.1\lib\netstandard2.0"
+#I @"C:\Users\stephen\.nuget\packages\FSharp.Data\3.3.3\lib\netstandard2.0"
 #r @"FSharp.Data.dll"
 open FSharp.Data
 
