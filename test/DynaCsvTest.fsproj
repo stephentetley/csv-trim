@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="UseCsvProvider.fsx" />
     <None Include="TestTrim01.fsx" />
     <None Include="Test02.fsx" />
     <None Include="Test03.fsx" />
